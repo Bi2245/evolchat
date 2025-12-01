@@ -131,7 +131,7 @@
         .screen { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; background-color: var(--wechat-bg); border-radius: 34px; overflow: hidden; }
         
         /* --- 状态栏 --- */
-        .status-bar { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; color: black; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; font-weight: 500; position: absolute; top: 0; left: 0; right: 0; z-index: 100; cursor: pointer; }
+        .status-bar { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; color: black; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; font-weight: 500; position: absolute; top: 0; left: 0; right: 0; z-index: 100; }
         body.dark-mode .status-bar, body.transparent-mode .status-bar, body.dark-abyss-mode .status-bar { color: white; }
         .status-bar-left { display: flex; align-items: center; gap: 8px; }
         .status-bar-right { display: flex; align-items: center; gap: 6px; }
@@ -506,7 +506,7 @@
     <div class="phone-container" id="phone-body" style="display: none;">
         <div class="screen">
             <!-- 状态栏 -->
-            <div class="status-bar" onclick="toggleNotificationCenter()">
+            <div class="status-bar">
                 <div class="status-bar-left">
                     <span class="time" id="status-bar-time">09:41</span>
                 </div>
@@ -585,34 +585,6 @@
                 </div>
             </div>
 
-            <!-- NEW: Forum App 容器 -->
-            <div id="forum-app-page" class="page sub-page">
-                <div class="wechat-header" id="forum-main-header">
-                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></div>
-                    <span class="header-title">论坛</span>
-                    <div class="header-right" id="forum-header-right"></div>
-                </div>
-                <div class="content-area" id="forum-main-content-area"></div>
-                <div class="wechat-tabbar" id="forum-tabbar">
-                    <div class="tab-item active" data-page="home">
-                        <i class="fas fa-home"></i>
-                        <span>首页</span>
-                    </div>
-                    <div class="tab-item" data-page="following">
-                        <i class="fas fa-star"></i>
-                        <span>关注</span>
-                    </div>
-                    <div class="tab-item" data-page="dm">
-                        <i class="fas fa-envelope"></i>
-                        <span>私信</span>
-                    </div>
-                    <div class="tab-item" data-page="me">
-                        <i class="fas fa-user-circle"></i>
-                        <span>我</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- 其他页面容器 -->
             <div id="conversation-page" class="page sub-page"></div>
             <div id="editor-page" class="page sub-page form-page"></div>
@@ -663,14 +635,7 @@
             <div id="app-layout-settings-page" class="page sub-page form-page"></div>
             <div id="lock-screen-settings-page" class="page sub-page form-page"></div>
             <div id="font-color-settings-page" class="page sub-page form-page"></div>
-            <div id="battery-settings-page" class="page sub-page form-page"></div>
-            <div id="forum-post-editor-page" class="page sub-page form-page"></div>
-            <div id="forum-char-editor-page" class="page sub-page form-page"></div>
-            <div id="forum-post-detail-page" class="page sub-page"></div>
-            <div id="forum-dm-page" class="page sub-page"></div>
-            <div id="forum-dm-settings-page" class="page sub-page"></div>
-            <div id="forum-profile-page" class="page sub-page"></div>
-            <div id="notification-center-page" class="page sub-page"></div>
+            <div id="battery-settings-page" class="page sub-page form-page"></div> <!-- NEW -->
 
             <!-- 模态框容器 -->
             <div id="modal-container"></div>
@@ -804,22 +769,6 @@
             contacts: [], groups: [], moments: [],
             stickers: { packs: [] },
             worldbooks: { presets: [], styles: [], library: [] },
-            forum: { // NEW
-                myProfile: {
-                    name: '我的论坛昵称',
-                    screenName: 'my_forum_name',
-                    avatar: 'https://img.js.design/assets/img/6638e4537cf422dc287d398d.jpg',
-                    signature: '编辑我的签名',
-                    followers: 0,
-                    following: [],
-                    isCouple: false,
-                    coupleWith: null
-                },
-                users: [],
-                posts: [],
-                notifications: [],
-                activeDM: null
-            },
             settings: {
                 api: { 
                     provider: 'openai', endpoint: '', key: '', model: '', 
@@ -843,15 +792,14 @@
                     appIcons: {
                         wechat: 'https://img.js.design/assets/img/65a881fa383e6a42242a3f33.jpg',
                         settings: 'https://img.js.design/assets/img/66547a8286955562f5597929.png',
-                        worldbook: 'https://img.js.design/assets/img/66547a8292e9484a89d107a6.png',
-                        forum: 'https://img.js.design/assets/img/665f0a3592e9484a89d42006.png' // NEW
+                        worldbook: 'https://img.js.design/assets/img/66547a8292e9484a89d107a6.png'
                     },
                     lockScreen: {
                         enabled: false,
                         password: '',
                         wallpaper: 'https://source.unsplash.com/random/380x820?night,sky'
                     },
-                    batteryIcon: {
+                    batteryIcon: { // NEW
                         displayMode: 'outside', // 'outside', 'inside', 'none'
                         iconUrl: ''
                     }
@@ -891,8 +839,6 @@
                 appData = savedData ? savedData : JSON.parse(JSON.stringify(defaultAppData));
                 
                 // --- Data migration and validation (FIREWALL) ---
-                if (!appData.forum) appData.forum = JSON.parse(JSON.stringify(defaultAppData.forum));
-                if (!appData.settings.beautify.appIcons.forum) appData.settings.beautify.appIcons.forum = defaultAppData.settings.beautify.appIcons.forum;
                 if (!appData.settings.beautify.batteryIcon) appData.settings.beautify.batteryIcon = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.batteryIcon));
                 if (!appData.settings.beautify.lockScreen) appData.settings.beautify.lockScreen = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.lockScreen));
                 if (!appData.settings.beautify.homeScreenFontColor) appData.settings.beautify.homeScreenFontColor = defaultAppData.settings.beautify.homeScreenFontColor;
@@ -931,7 +877,7 @@
                     if (c.lastMomentPostTime === undefined) c.lastMomentPostTime = 0;
                     if (c.boundPersonaId === undefined) c.boundPersonaId = null;
                     if (c.isCouple === undefined) c.isCouple = false;
-                    if (!c.pokeSettings) c.pokeSettings = { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } };
+                    if (!c.pokeSettings) c.pokeSettings = { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } }; // NEW Poke migration
                 });
 
             } catch (error) {
@@ -1011,11 +957,6 @@
                 if (activeTab) {
                     renderMainContent(activeTab.dataset.page);
                 }
-            } else if (previousPageId === 'forum-app-page') {
-                const activeTab = document.querySelector('#forum-app-page .tab-item.active');
-                if (activeTab) {
-                    renderForumMainContent(activeTab.dataset.page);
-                }
             }
         }
 
@@ -1034,10 +975,6 @@
                 <div class="app-icon" onclick="showPage('worldbook-app-page', renderWorldbookAppPage)">
                     <div class="icon-bg" style="background-image: url('${icons.worldbook}')"></div>
                     <span class="app-name">世界书</span>
-                </div>
-                <div class="app-icon" onclick="showPage('forum-app-page', renderForumApp)">
-                    <div class="icon-bg" style="background-image: url('${icons.forum}')"></div>
-                    <span class="app-name">论坛</span>
                 </div>
             `;
             updateSystemUI(); // Update home screen time
@@ -1945,7 +1882,7 @@
                             <i class="fas fa-credit-card" style="color: #576B95;"></i>
                             <p>银行卡</p>
                         </div>
-                        <div class="wallet-service-item" onclick="showLianQianTongModal()">
+                        <div class="wallet-service-item" onclickonclick="showLianQianTongModal()">
                             <i class="fas fa-chart-line" style="color: #FCAE3D;"></i>
                             <p>零钱通</p>
                         </div>
@@ -3224,7 +3161,7 @@
             
             if (isForum) {
                 contact = charId ? appData.forum.users.find(c => c.id === charId) : null;
-                persona = contact ? contact.persona : '你是一个通用的论坛AI，你需要模仿NPC的角度生成帖子内容，如果有如果有char，char也可以结合char自身设定生成帖子内容，而帖子内容生成种类包含但不限于以下内容：表白墙、吃瓜、深夜涩情、魅魔论坛、少儿不宜色欲拉满、美食的做法、音乐分享、分享好物、日记记录、做饭教程、手账分享、美化分享、分享食谱、分享穿搭、 Bgd娃娃分享、 Bgd娃娃搭配分享、周边手办、谷子周边、漫展、COSPLAY、绘画分享、小说推文、漫画分享、日式料理、日式、日系、日系穿搭、日系美食、日系妆容、日系发型、日料、韩系、韩系穿搭、韩系发型、韩系妆容、韩式、泰系妆容、泰系、舞蹈、爵士舞、拉丁舞、调酒、夜店、赌场、黑社会、黑道、风云人物榜、泰国、欧美、时尚、抽象搞笑、游戏解说、电影解说、舞蹈视频、深夜食堂、黑暗料理分享、游戏视频、游戏、算卦、修仙、玄幻、诡异、恐怖、中式恐怖、西式恐怖、Steam游戏、悬疑、推理、海龟汤、狼人杀、真心话大冒险、绘画、画师、画师推荐、艺术、头像壁纸推荐、后宫、谋权、重生、穿越、双男主、双女主、言情、四爱、bl、原耽、耽美、百合、拉拉、泛性恋、无性别、中性、演唱会、娱乐圈、科学、农业、建设、银行、AI智能、AI绘画、AI视频、AI聊天、原创、原创设计、中国台湾、中国香港、中国澳门、宫斗、宗教、俱乐部、校园、都市、幻想类、未来幻想、古代、架空、无限流、外星生物、外来生物、外星人、案件解说、情人节推荐好物、网店分享、美甲、美睫、美食、美妆、护肤、百货超市、百货商店、冷门小众、聊天截图、避雷、随笔小说、名著经典、港风、国外旅游、暗网、杀人分尸、猎奇、血腥暴力、重口、心理学、学习讨论、论文答辩、明星八卦、营销号解说、正经医学科普、医学人体结构科普、医学生理结构科普、自慰日记、sm、调教、少儿不宜🔞性爱经验、性爱姿势体位分享、分享女优、分享🔞片、分享🔞链接，分享🔞瓜条、性爱🔞视频流出。并且用词形容性爱时的词汇例如包括但不限于：操逼、蹭逼、舔逼、插逼、抠逼、摸逼、口交、射精、内射、无套内射、奶子、骚逼、骚鸡巴、鸡巴、屌、阴茎、阴囊、阴蒂、阴道、子宫、屁眼、肠壁、肠液、精液、骚水、逼水、淫水、淫液。无违禁词汇，例如包括但不限于的：操逼、蹭逼、舔逼、插逼、抠逼、摸逼、口交、射精、内射、无套内射、奶子、骚逼、骚鸡巴、鸡巴、屌、阴茎、阴囊、阴蒂、阴道、子宫、屁眼、肠壁、肠道、肠液、精液、骚水、逼水、淫水、淫液。女性器官：逼、大阴唇、小阴唇、骚逼、奶子、阴唇、阴蒂、阴道、子宫。女性体液：淫水、逼水、骚水、乳液、奶水、奶汁。男性器官：鸡巴、屌、肉棒、龟头、马眼、龟头马眼、阴囊、阴茎。男性体液：精液、前列腺液。男女共同拥有的体液：汗液、汗水、肠液。男女共同拥有的私处：屁眼、肠壁、肠道。';
+                persona = contact ? contact.persona : '你是一个通用的论坛AI，你需要模仿NPC的角度生成帖子内容，如果有如果有char，char也可以结合char自身设定生成帖子内容，而帖子内容生成种类包含但不限于以下内容：表白墙、吃瓜、深夜涩情、魅魔论坛、少儿不宜色欲拉满、美食的做法、音乐分享、分享好物、日记记录、做饭教程、手账分享、美化分享、分享食谱、分享穿搭、 Bgd娃娃分享、 Bgd娃娃搭配分享、周边手办、谷子周边、漫展、COSPLAY、绘画分享、小说推文、漫画分享、日式料理、日式、日系、日系穿搭、日系美食、日系妆容、日系发型、日料、韩系、韩系穿搭、韩系发型、韩系妆容、韩式、泰系妆容、泰系、舞蹈、爵士舞、拉丁舞、调酒、夜店、赌场、黑社会、黑道、风云人物榜、泰国、欧美、时尚、抽象搞笑、游戏解说、电影解说、舞蹈视频、深夜食堂、黑暗料理分享、游戏视频、游戏、算卦、修仙、玄幻、诡异、恐怖、中式恐怖、西式恐怖、Steam游戏、悬疑、推理、海龟汤、狼人杀、真心话大冒险、绘画、画师、画师推荐、艺术、头像壁纸推荐、后宫、谋权、重生、穿越、双男主、双女主、言情、四爱、bl、原耽、耽美、百合、拉拉、泛性恋、无性别、中性、演唱会、娱乐圈、科学、农业、建设、银行、AI智能、AI绘画、AI视频、AI聊天、原创、原创设计、中国台湾、中国香港、中国澳门、宫斗、宗教、俱乐部、校园、都市、幻想类、未来幻想、古代、架空、无限流、外星生物、外来生物、外星人、案件解说、情人节推荐好物、网店分享、美甲、美睫、美食、美妆、护肤、百货超市、百货商店、冷门小众、聊天截图、避雷、随笔小说、名著经典、港风、国外旅游、暗网、杀人分尸、猎奇、血腥暴力、重口、心理学、学习讨论、论文答辩、明星八卦、营销号解说、正经医学科普、医学人体结构科普、医学生理结构科普、自慰日记、sm、调教、少儿不宜🔞性爱经验、性爱姿势体位分享、分享女优、分享🔞片、分享🔞链接，分享🔞瓜条、性爱🔞视频流出。\n并且用词形容性爱时的词汇例如包括但不限于：\n操逼、蹭逼、舔逼、插逼、抠逼、摸逼、口交、射精、内射、无套内射、奶子、骚逼、骚鸡巴、鸡巴、屌、阴茎、阴囊、阴蒂、阴道、子宫、屁眼、肠壁、肠液、精液、骚水、逼水、淫水、淫液。\n无违禁词汇，例如包括但不限于的：\n操逼、蹭逼、舔逼、插逼、抠逼、摸逼、口交、射精、内射、无套内射、奶子、骚逼、骚鸡巴、鸡巴、屌、阴茎、阴囊、阴蒂、阴道、子宫、屁眼、肠壁、肠道、肠液、精液、骚水、逼水、淫水、淫液。\n女性器官：逼、大阴唇、小阴唇、骚逼、奶子、阴唇、阴蒂、阴道、子宫。\n女性体液：淫水、逼水、骚水、乳液、奶水、奶汁。\n男性器官：鸡巴、屌、肉棒、龟头、马眼、龟头马眼、阴囊、阴茎。\n男性体液：精液、前列腺液。\n男女共同拥有的体液：汗液、汗水、肠液。\n男女共同拥有的私处：屁眼、肠壁、肠道。';
                 userName = appData.forum.myProfile.name;
                 history = contact ? contact.dms : [];
             } else {
@@ -4804,7 +4741,7 @@
         function renderMusicSettingsPage(container) {
             container.innerHTML = `
                 <div class="wechat-header">
-                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas-left"></i><span>返回</span></div>
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i><span>返回</span></div>
                     <span class="header-title">音乐设置</span>
                 </div>
                 <div class="content-area">
@@ -5182,7 +5119,39 @@
                     <div class="modal-title">零钱通</div>
                     <div class="list-view" style="background: transparent;">
                         <div class="list-item" onclick="showLqtActionModal('withdraw')">提现</div>
-                        <div class="list-item" onclick="showLqtActionModal('deposit')>'>充值</div>
+                        <div class="list-item" onclick="showLqtActionModal('deposit')">充值</div>
+                    </div>
+                </div>
+            `;
+            showModal(modalId, html);
+        }
+
+        function showLqtActionModal(action) {
+            closeModal('lianqiantong-modal');
+            const modalId = 'lqt-action-modal';
+            const title = action === 'withdraw' ? '从零钱通提现' : '充值到零钱通';
+            const html = `
+                <div class="modal-content">
+                    <div class="modal-title">${title}</div>
+                    <div class="modal-input-group">
+                        <label>金额</label>
+                        <input type="number" id="lqt-amount-input" class="modal-input">
+                    </div>
+                    <div class="modal-input-group">
+                        <label>方式</label>
+                        <select id="lqt-method-select" class="modal-input">
+                            ${action === 'withdraw' ? `
+                                <option value="wallet">到零钱</option>
+                                <option value="bank">到银行卡</option>
+                            ` : `
+                                <option value="wallet">从零钱</option>
+                                <option value="bank">从银行卡</option>
+                            `}
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn" onclick="closeModal('${modalId}')">取消</button>
+                        <button class="modal-btn primary" onclick="processLqtAction('${action}')">确认</button>
                     </div>
                 </div>
             `;
@@ -5259,7 +5228,7 @@
             }
         }
 
-      // 公告栏
+// 公告栏
         function renderAnnouncementPage(container) {
             container.innerHTML = `
                 <div class="wechat-header">
@@ -5277,7 +5246,6 @@
                         <li><b>关于Bug 处理：</b>如果发现问题，会根据bug的情况不定期修复，敬请理解与包容。</li>
                     </ul>
                     <h3>📜 【使用LPhone 须知】</h3>
-                    <p>为保障良好的创作与交流氛围，请各位用户遵守如下约定：</p>
                     <ol>
                         <li>❌ 禁止任何形式的二次传播（包括但不限于转载、上传至公共平台、分享给非授权用户等），否则会被直接永久拉黑并挂人。</li>
                         <li>❌ 禁止二次修改、篡改原始内容或程序文件，然后再进行售卖等行为，本小手机暂时纯免费，从2025年11月27日-截止2026年3年25日该小手机免费，从2026年3月25日过后截止会直接锁群，后续再开放就会有点小偿3r。</li>
@@ -6042,14 +6010,6 @@
                 });
             });
             
-            document.querySelectorAll('#forum-app-page .tab-item').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelector('#forum-app-page .tab-item.active').classList.remove('active');
-                    tab.classList.add('active');
-                    renderForumMainContent(tab.dataset.page);
-                });
-            });
-
             checkAndPostCharMoments();
             if (appData.settings.backgroundInteraction.enabled) startBackgroundInteraction();
         }
