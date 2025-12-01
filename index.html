@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>LPhone测试</title>
+    <title>LPhone[测试版]</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style id="global-theme-style"></style> <!-- 全局自定义主题注入点 -->
     <style>
@@ -3541,9 +3541,6 @@
             itemsHtml += `<div class="context-menu-item" onclick="handleMessageAction('forward', ${messageId}, '${chatId}', '${chatType}')">转发</div>`;
             itemsHtml += `<div class="context-menu-item" onclick="startMultiSelectMode(${messageId})">多选</div>`;
             
-                                    menu-item" onclick="handleMessageAction('forward', ${messageId}, '${chatId}', '${chatType}')">转发</div>`;
-            itemsHtml += `<div class="context-menu-item" onclick="startMultiSelectMode(${messageId})">多选</div>`;
-            
             menu.innerHTML = itemsHtml;
             menu.style.display = 'block';
             
@@ -4287,7 +4284,7 @@
 
         function showForwardedContentModal(event, messageId, chatId, chatType) {
             event.stopPropagation();
-            const chat = chatType === 'group' ? appData.groups.find(g => g.id == chatId) : appData.contacts.find(c => c.id == chatId);
+            const chat = chattype === 'group' ? appData.groups.find(g => g.id == chatId) : appData.contacts.find(c => c.id == chatId);
             const message = chat.conversation.find(m => m.id == messageId);
             if (!message || message.type !== 'forward') return;
 
