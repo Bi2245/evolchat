@@ -838,7 +838,7 @@
                 wallet: { balance: 100000, transactions: [], currency: 'CNY' },
                 personas: [],
                 bankCards: [],
-                forumProfile: { // NEW
+                forumProfile: {
                     bio: '这个人很懒，什么都没留下。',
                     followers: 0,
                     following: 0
@@ -847,11 +847,11 @@
             contacts: [], groups: [], moments: [],
             stickers: { packs: [] },
             worldbooks: { presets: [], styles: [], library: [] },
-            forum: { // NEW
+            forum: {
                 posts: [],
                 activeChat: { id: null, type: null }
             },
-            notifications: [], // NEW
+            notifications: [],
             settings: {
                 api: { 
                     provider: 'openai', endpoint: '', key: '', model: '', 
@@ -876,7 +876,7 @@
                         wechat: 'https://img.js.design/assets/img/65a881fa383e6a42242a3f33.jpg',
                         settings: 'https://img.js.design/assets/img/66547a8286955562f5597929.png',
                         worldbook: 'https://img.js.design/assets/img/66547a8292e9484a89d107a6.png',
-                        forum: 'https://img.js.design/assets/img/6659c2b8c3263435898c199d.png' // NEW
+                        forum: 'https://img.js.design/assets/img/6659c2b8c3263435898c199d.png'
                     },
                     lockScreen: {
                         enabled: false,
@@ -966,10 +966,10 @@
                     if (c.boundPersonaId === undefined) c.boundPersonaId = null;
                     if (c.isCouple === undefined) c.isCouple = false;
                     if (!c.pokeSettings) c.pokeSettings = { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } };
-                    if (!c.forumConversation) c.forumConversation = []; // NEW
-                    if (c.forumFollowers === undefined) c.forumFollowers = Math.floor(Math.random() * 10000); // NEW
-                    if (c.forumFollowing === undefined) c.forumFollowing = Math.floor(Math.random() * 500); // NEW
-                    if (c.forumChatSettings === undefined) c.forumChatSettings = { background: '', userAvatar: '', charAvatar: '' }; // NEW
+                    if (!c.forumConversation) c.forumConversation = [];
+                    if (c.forumFollowers === undefined) c.forumFollowers = Math.floor(Math.random() * 10000);
+                    if (c.forumFollowing === undefined) c.forumFollowing = Math.floor(Math.random() * 500);
+                    if (c.forumChatSettings === undefined) c.forumChatSettings = { background: '', userAvatar: '', charAvatar: '' };
                 });
 
             } catch (error) {
@@ -3418,7 +3418,7 @@
 "<style>body{background:pink;}</style>"，聊天室背景需变为粉色，而非显示代码字符串）。
 - CSS代码需符合基础语法规范（支持主流浏览器前缀，如-webkit-），禁止使用恶意代码（如无限弹窗、窃取信息的JS注入），系统需内置安全过滤机制。
 6.2 前端代码支持：基础交互与视觉呈现
-- 支持嵌入HTML/JS基础前端代码（如按钮、动态文本框、简单动画），聊天室需作为“沙箱环境”运行代码，确保不影响主程序稳定性。例如：世界书嵌入
+- 支持嵌入HTML/JS基础前端代码（如按钮、动态文本框、简单动画等），聊天室需作为“沙箱环境”运行代码，确保不影响主程序稳定性。例如：世界书嵌入
 "<button onclick="alert('Hi')">点我</button>"，聊天室需显示可点击按钮，点击后弹出提示框。
 - 前端代码需“轻量化”：避免复杂计算或高频刷新（防止卡顿），视觉元素需与聊天主题协调（如暗色系聊天室不宜用亮黄色大面积背景）。
 七、例外情形与违规修正
@@ -3933,7 +3933,7 @@
                         if (replies.length > 0) {
                             post.comments.push({ authorId: author.id, text: replies[0], timestamp: Date.now() });
                             saveData();
-                            renderMomentsFeed();
+                            if (document.getElementById('moments-page').classList.contains('active')) renderMomentsFeed();
                         }
                     });
                 }
