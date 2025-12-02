@@ -493,7 +493,7 @@
         #announcement-page h3 { color: var(--wechat-green); border-bottom: 1px solid var(--wechat-border-color); padding-bottom: 5px; }
         #announcement-page ul { padding-left: 20px; }
 
-        /* --- 论坛APP样式 --- */
+        /* --- 论坛APP样式 (NEW) --- */
         .forum-tabbar { display: flex; height: 50px; background-color: var(--wechat-nav-bg); border-top: 0.5px solid var(--wechat-border-color); flex-shrink: 0; }
         .forum-tab-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; color: var(--wechat-text-secondary); cursor: pointer; }
         .forum-tab-item.active { color: var(--wechat-green); }
@@ -508,7 +508,8 @@
         .post-header .author-info .timestamp { font-size: 12px; color: var(--wechat-text-secondary); }
         .post-content-preview { font-size: var(--font-size-base); line-height: 1.5; color: var(--global-font-color); max-height: 120px; overflow: hidden; text-overflow: ellipsis; white-space: pre-wrap; word-break: break-word; }
         .post-footer { display: flex; justify-content: space-around; align-items: center; margin-top: 15px; color: var(--wechat-text-secondary); font-size: 14px; }
-        .post-footer .action { display: flex; align-items: center; gap: 5px; }
+        .post-footer .action { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .post-footer .action:hover { color: var(--wechat-green); }
         .post-footer .action.liked { color: var(--wechat-red); }
         .post-footer .action.bookmarked { color: var(--wechat-blue); }
         #forum-profile-page .profile-header { padding: 20px; text-align: center; background-color: var(--wechat-nav-bg); }
@@ -623,7 +624,7 @@
                 </div>
             </div>
             
-            <!-- Forum App 容器 -->
+            <!-- Forum App 容器 (NEW) -->
             <div id="forum-app-page" class="page sub-page">
                 <div class="wechat-header" id="forum-main-header">
                     <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></div>
@@ -702,11 +703,9 @@
             <div id="lock-screen-settings-page" class="page sub-page form-page"></div>
             <div id="font-color-settings-page" class="page sub-page form-page"></div>
             <div id="battery-settings-page" class="page sub-page form-page"></div>
-            <!-- Forum App Pages -->
+            
+            <!-- Forum App Pages (NEW) -->
             <div id="forum-home-page" class="page sub-page"></div>
-            <div id="forum-following-page" class="page sub-page"></div>
-            <div id="forum-messages-page" class="page sub-page"></div>
-            <div id="forum-me-page" class="page sub-page"></div>
             <div id="forum-conversation-page" class="page sub-page"></div>
             <div id="forum-chat-settings-page" class="page sub-page"></div>
             <div id="forum-create-post-page" class="page sub-page form-page"></div>
@@ -846,12 +845,14 @@
                     bio: '这个人很懒，什么都没留下。',
                     followers: 0,
                     following: 0,
-                    isFollowing: {}
+                    posts: [],
+                    likedPosts: [],
+                    bookmarkedPosts: []
                 }
             },
             contacts: [], groups: [], moments: [],
             stickers: { packs: [] },
-            worldbooks: { presets: [], styles: [], library: [], forumLibrary: [] },
+            worldbooks: { presets: [], styles: [], library: [], forum: [] }, // NEW: forum worldbook
             forum: {
                 posts: [],
                 activeChat: { id: null, type: null }
@@ -931,7 +932,6 @@
                 if (!appData.forum) appData.forum = JSON.parse(JSON.stringify(defaultAppData.forum));
                 if (!appData.notifications) appData.notifications = [];
                 if (!appData.user.forumProfile) appData.user.forumProfile = JSON.parse(JSON.stringify(defaultAppData.user.forumProfile));
-                if (!appData.user.forumProfile.isFollowing) appData.user.forumProfile.isFollowing = {};
                 if (!appData.settings.beautify.appIcons.forum) appData.settings.beautify.appIcons.forum = defaultAppData.settings.beautify.appIcons.forum;
                 if (!appData.settings.beautify.batteryIcon) appData.settings.beautify.batteryIcon = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.batteryIcon));
                 if (!appData.settings.beautify.lockScreen) appData.settings.beautify.lockScreen = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.lockScreen));
@@ -959,8 +959,8 @@
                 if (!appData.settings.beautify.voiceBubbleCss) appData.settings.beautify.voiceBubbleCss = defaultAppData.settings.beautify.voiceBubbleCss;
                 if (!appData.settings.beautify.screenWidth) appData.settings.beautify.screenWidth = 380;
                 if (!appData.settings.beautify.screenHeight) appData.settings.beautify.screenHeight = 820;
-                if (!appData.worldbooks) appData.worldbooks = { presets: [], styles: [], library: [], forumLibrary: [] };
-                if (!appData.worldbooks.forumLibrary) appData.worldbooks.forumLibrary = [];
+                if (!appData.worldbooks) appData.worldbooks = { presets: [], styles: [], library: [] };
+                if (!appData.worldbooks.forum) appData.worldbooks.forum = []; // NEW
                 if (!appData.longTermMemory) appData.longTermMemory = {};
                 if (!appData.settings.api.repetition_penalty) appData.settings.api.repetition_penalty = 0.69;
                 if (!appData.settings.api.presets) appData.settings.api.presets = [];
@@ -976,12 +976,9 @@
                     if (!c.forumConversation) c.forumConversation = [];
                     if (c.forumFollowers === undefined) c.forumFollowers = Math.floor(Math.random() * 10000);
                     if (c.forumFollowing === undefined) c.forumFollowing = Math.floor(Math.random() * 500);
-                    if (c.forumChatSettings === undefined) c.forumChatSettings = { background: '', userAvatar: '', charAvatar: '' };
-                    if (appData.user.forumProfile.isFollowing[c.id] === undefined) {
-                        appData.user.forumProfile.isFollowing[c.id] = true; // Default to following all existing contacts
-                    }
+                    if (c.isFollowedByPlayer === undefined) c.isFollowedByPlayer = true; // Default to followed
+                    if (!c.forumChatSettings) c.forumChatSettings = { background: '', userAvatar: '', charAvatar: '' };
                 });
-                appData.user.forumProfile.following = Object.values(appData.user.forumProfile.isFollowing).filter(v => v).length;
 
             } catch (error) {
                 console.error("Failed to load data, using defaults.", error);
@@ -1019,14 +1016,13 @@
                 return;
             }
 
-            if (pageHistory[pageHistory.length - 1] !== pageId) {
+            const currentPageId = pageHistory[pageHistory.length - 1];
+            if (currentPageId !== pageId) {
                 pageHistory.push(pageId);
             }
 
             if (renderFunc) {
                 try {
-                    // Clear previous content before rendering new page
-                    pageElement.innerHTML = '';
                     renderFunc(pageElement, ...args);
                 } catch (e) {
                     console.error(`Render Firewall: Error rendering page "${pageId}".`, e);
@@ -1042,7 +1038,16 @@
         }
 
         function goBack() {
-            if (pageHistory.length <= 1) return;
+            if (pageHistory.length <= 1) {
+                // If we are at the root (e.g., wechat-app), go to home screen
+                const currentPageId = pageHistory[0];
+                if (currentPageId !== 'home-screen-page' && currentPageId !== 'lock-screen-page') {
+                    pageHistory = ['home-screen-page'];
+                    showPage('home-screen-page', renderHomeScreen);
+                }
+                return;
+            }
+            
             const currentPageId = pageHistory.pop();
             const previousPageId = pageHistory[pageHistory.length - 1];
             
@@ -1054,15 +1059,14 @@
             const previousPageEl = document.getElementById(previousPageId);
             if (previousPageEl) {
                 previousPageEl.classList.add('active');
-            }
-            
-            // Re-render main content if returning to a tabbed app page
-            if (previousPageId === 'wechat-app-page') {
-                const activeTab = document.querySelector('#wechat-app-page .tab-item.active');
-                if (activeTab) renderMainContent(activeTab.dataset.page);
-            } else if (previousPageId === 'forum-app-page') {
-                const activeTab = document.querySelector('#forum-app-page .forum-tab-item.active');
-                if (activeTab) renderForumMainContent(activeTab.dataset.page);
+                // Re-render main content if we go back to a tabbed app
+                if (previousPageId === 'wechat-app-page') {
+                    const activeTab = document.querySelector('#wechat-app-page .tab-item.active');
+                    if (activeTab) renderMainContent(activeTab.dataset.page);
+                } else if (previousPageId === 'forum-app-page') {
+                    const activeTab = document.querySelector('#forum-app-page .forum-tab-item.active');
+                    if (activeTab) renderForumMainContent(activeTab.dataset.page);
+                }
             }
         }
 
@@ -1105,12 +1109,13 @@
             contentArea.innerHTML = '';
             plusBtn.style.display = 'block';
             header.querySelector('.header-left').style.visibility = 'visible';
-            header.querySelector('.header-left').onclick = () => goBack();
+            header.querySelector('.header-back-btn').onclick = goBack;
+
 
             switch (pageType) {
                 case 'chat-list':
                     header.querySelector('.header-title').textContent = '微信';
-                    renderChatListPage(contentArea, 'wechat');
+                    renderChatListPage(contentArea);
                     plusBtn.onclick = () => showMainPlusMenu();
                     break;
                 case 'contacts':
@@ -1144,7 +1149,7 @@
             showModal(modalId, html);
         }
 
-        function renderChatListPage(container, source) {
+        function renderChatListPage(container) {
             let html = '<div class="list-view">';
             const visibleContacts = appData.contacts.filter(c => !appData.settings.blacklist.includes(c.id));
             const allChats = [...visibleContacts.map(c => ({...c, type: 'individual'})), ...appData.groups.map(g => ({...g, type: 'group'}))];
@@ -1152,20 +1157,17 @@
             const sortedChats = [...allChats].sort((a, b) => {
                 if (a.isPinned && !b.isPinned) return -1;
                 if (!a.isPinned && b.isPinned) return 1;
-                const conversationA = source === 'forum' ? a.forumConversation : a.conversation;
-                const conversationB = source === 'forum' ? b.forumConversation : b.conversation;
-                const lastMsgA = conversationA?.[conversationA.length - 1]?.timestamp || 0;
-                const lastMsgB = conversationB?.[conversationB.length - 1]?.timestamp || 0;
+                const lastMsgA = a.conversation?.[a.conversation.length - 1]?.timestamp || 0;
+                const lastMsgB = b.conversation?.[b.conversation.length - 1]?.timestamp || 0;
                 return lastMsgB - lastMsgA;
             });
 
             if (sortedChats.length === 0) {
-                html += `<div style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">暂无聊天，去${source === 'wechat' ? '通讯录' : '关注'}添加一个角色吧</div>`;
+                html += '<div style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">暂无聊天，去通讯录添加一个角色吧</div>';
             } else {
                 sortedChats.forEach(chat => {
-                    const conversation = source === 'forum' ? chat.forumConversation : chat.conversation;
-                    const lastMessage = conversation && conversation.length > 0
-                        ? conversation[conversation.length - 1]
+                    const lastMessage = chat.conversation && chat.conversation.length > 0
+                        ? chat.conversation[chat.conversation.length - 1]
                         : null;
                     
                     let subtext = '...';
@@ -1200,11 +1202,9 @@
                     const displayName = chat.type === 'group' ? chat.name : (chat.remark || chat.name);
                     const starIcon = chat.isStarred ? '<i class="fas fa-star"></i>' : '';
                     const avatarSrc = chat.type === 'group' ? (chat.avatar || 'https://img.js.design/assets/img/65a881fa383e6a42242a3f33.jpg') : chat.avatar;
-                    const pageToShow = source === 'forum' ? 'forum-conversation-page' : 'conversation-page';
-                    const renderFunc = source === 'forum' ? 'renderForumConversationPage' : 'renderConversationPage';
 
                     html += `
-                        <div class="list-item ${chat.isPinned ? 'pinned' : ''}" onclick="showPage('${pageToShow}', ${renderFunc}, '${chat.id}', '${chat.type}')">
+                        <div class="list-item ${chat.isPinned ? 'pinned' : ''}" onclick="showPage('conversation-page', renderConversationPage, '${chat.id}', '${chat.type}', 'wechat')">
                             <img src="${avatarSrc}" class="avatar">
                             <div class="details">
                                 <span class="name">${displayName} ${starIcon}</span>
@@ -1371,7 +1371,7 @@
                     <div class="list-item" onclick="showWorldbookEditor('library')">
                         <div class="details"><span class="name">世界书库</span></div><i class="fas fa-chevron-right chevron"></i>
                     </div>
-                    <div class="list-item" onclick="showWorldbookEditor('forumLibrary')">
+                    <div class="list-item" onclick="showWorldbookEditor('forum')">
                         <div class="details"><span class="name">论坛APP专属世界书</span></div><i class="fas fa-chevron-right chevron"></i>
                     </div>
                 </div>
@@ -1410,7 +1410,7 @@
                     </div>
                     <div class="form-group">
                         <label>地址 (20字以内)</label>
-                        <input type="text" id="editor-address" value="${target?.address || ''}" maxlength="20">
+                        <input type="text" id="editor-address" value="${target.address || ''}" maxlength="20">
                     </div>
                     <div class="form-group">
                         <label>个性签名 (15字以内)</label>
@@ -1450,27 +1450,25 @@
                         target.name = newName;
                         target.persona = newPersona;
                     } else { // Create new
-                        const newContactId = Date.now();
                         appData.contacts.push({
-                            id: newContactId, name: newName, avatar: newAvatar, persona: newPersona,
+                            id: Date.now(), name: newName, avatar: newAvatar, persona: newPersona,
                             conversation: [], remark: '', isPinned: false, isStarred: false, lastMomentPostTime: 0,
                             boundPersonaId: null, isCouple: false,
                             pokeSettings: { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } },
                             forumConversation: [], forumFollowers: Math.floor(Math.random() * 10000), forumFollowing: Math.floor(Math.random() * 500),
+                            isFollowedByPlayer: true,
                             forumChatSettings: { background: '', userAvatar: '', charAvatar: '' }
                         });
-                        // Default to following new contact
-                        appData.user.forumProfile.isFollowing[newContactId] = true;
-                        appData.user.forumProfile.following++;
                     }
                 }
                 saveData(true, goBack);
             };
         }
         
-        function renderConversationPage(container, chatId, chatType) {
-            appData.activeChat.id = chatId;
-            appData.activeChat.type = chatType;
+        function renderConversationPage(container, chatId, chatType, source) {
+            const activeChat = source === 'wechat' ? appData.activeChat : appData.forum.activeChat;
+            activeChat.id = chatId;
+            activeChat.type = chatType;
 
             let chat;
             if (chatType === 'group') {
@@ -1485,6 +1483,8 @@
             }
             
             const displayName = chatType === 'group' ? `${chat.name} (${chat.members.length})` : (chat.remark || chat.name);
+            const settingsPage = source === 'wechat' ? (chatType === 'group' ? 'group-chat-settings-page' : 'chat-settings-page') : 'forum-chat-settings-page';
+            const renderSettingsFunc = source === 'wechat' ? (chatType === 'group' ? 'renderGroupChatSettingsPage' : 'renderChatSettingsPage') : 'renderForumChatSettingsPage';
 
             container.innerHTML = `
                 <div class="wechat-header">
@@ -1492,18 +1492,19 @@
                         <i class="fas fa-chevron-left"></i>
                     </div>
                     <span class="header-title">${displayName}</span>
-                    <div class="header-right" onclick="showPage('${chatType === 'group' ? 'group-chat-settings-page' : 'chat-settings-page'}', ${chatType === 'group' ? 'renderGroupChatSettingsPage' : 'renderChatSettingsPage'}, '${chatId}')"><i class="fas fa-ellipsis-h"></i></div>
+                    <div class="header-right" onclick="showPage('${settingsPage}', ${renderSettingsFunc}, '${chatId}')"><i class="fas fa-ellipsis-h"></i></div>
                 </div>
-                <div class="content-area" id="message-area"></div>
+                <div class="content-area" id="${source}-message-area"></div>
                 <div class="chat-input-bar">
-                    <i class="fas fa-microphone" id="chat-voice-btn"></i>
-                    <input type="text" id="chat-input" placeholder="发送消息">
-                    <i class="far fa-grin" id="chat-sticker-btn"></i>
-                    <i class="fas fa-plus-circle" id="chat-plus-btn"></i>
+                    <i class="fas fa-microphone" id="${source}-chat-voice-btn"></i>
+                    <input type="text" id="${source}-chat-input" placeholder="发送消息">
+                    <i class="far fa-grin" id="${source}-chat-sticker-btn"></i>
+                    <i class="fas fa-plus-circle" id="${source}-chat-plus-btn"></i>
                 </div>
-                <div class="chat-plus-menu" id="chat-plus-menu">
-                    <div class="plus-menu-item" id="plus-image-btn"><div class="icon"><i class="fas fa-image"></i></div><span>相册</span></div>
-                    <div class="plus-menu-item" id="plus-camera-btn"><div class="icon"><i class="fas fa-camera"></i></div><span>拍摄</span></div>
+                <div class="chat-plus-menu" id="${source}-chat-plus-menu">
+                    <div class="plus-menu-item" id="${source}-plus-image-btn"><div class="icon"><i class="fas fa-image"></i></div><span>相册</span></div>
+                    <div class="plus-menu-item" id="${source}-plus-camera-btn"><div class="icon"><i class="fas fa-camera"></i></div><span>拍摄</span></div>
+                    ${source === 'wechat' ? `
                     <div class="plus-menu-item" id="plus-voice-call-btn"><div class="icon"><i class="fas fa-phone-alt"></i></div><span>语音通话</span></div>
                     <div class="plus-menu-item" id="plus-location-btn"><div class="icon"><i class="fas fa-map-marker-alt"></i></div><span>位置</span></div>
                     <div class="plus-menu-item" id="plus-redpacket-btn"><div class="icon" style="color: #E64340;"><i class="fas fa-envelope"></i></div><span>红包</span></div>
@@ -1515,18 +1516,19 @@
                     <div class="plus-menu-item" id="plus-couple-btn"><div class="icon" style="color: #FF69B4;"><i class="fas fa-heart"></i></div><span>情侣空间</span></div>
                     <div class="plus-menu-item" id="plus-delivery-btn"><div class="icon" style="color: #FFC107;"><i class="fas fa-utensils"></i></div><span>外卖</span></div>
                     <div class="plus-menu-item" onclick="showPage('char-balance-page', showCharBalancePage, '${chatId}')"><div class="icon"><i class="fas fa-search-dollar"></i></div><span>对方余额</span></div>
+                    ` : ''}
                 </div>
-                <div class="multi-select-toolbar" id="multi-select-toolbar">
-                    <button id="multi-select-forward-btn" disabled>转发</button>
-                    <button id="multi-select-delete-btn" disabled>删除</button>
-                    <button id="multi-select-cancel-btn">取消</button>
+                <div class="multi-select-toolbar" id="${source}-multi-select-toolbar">
+                    <button id="${source}-multi-select-forward-btn" disabled>转发</button>
+                    <button id="${source}-multi-select-delete-btn" disabled>删除</button>
+                    <button id="${source}-multi-select-cancel-btn">取消</button>
                 </div>
             `;
             
-            renderMessages(chatId, chatType, 'wechat');
+            renderMessages(chatId, chatType, source);
 
-            const messageArea = document.getElementById('message-area');
-            const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn-wechat');
+            const messageArea = document.getElementById(`${source}-message-area`);
+            const scrollToBottomBtn = document.getElementById(`scroll-to-bottom-btn-${source}`);
             if (messageArea) {
                 messageArea.onscroll = () => {
                     if (scrollToBottomBtn) {
@@ -1539,61 +1541,66 @@
                 };
             }
 
-            const input = document.getElementById('chat-input');
+            const input = document.getElementById(`${source}-chat-input`);
             input.onkeydown = (e) => {
                 if (e.key === 'Enter' && input.value.trim() !== '') {
                     e.preventDefault();
                     const quotedMessageId = input.dataset.quotedMessageId;
-                    sendMessage(chatId, chatType, { content: input.value.trim() }, 'text', 'wechat', quotedMessageId);
+                    sendMessage(chatId, chatType, { content: input.value.trim() }, 'text', source, quotedMessageId);
                     input.value = '';
                     input.placeholder = '发送消息';
                     delete input.dataset.quotedMessageId;
                 }
             };
             
-            document.getElementById('chat-plus-btn').onclick = () => {
-                const menu = document.getElementById('chat-plus-menu');
+            document.getElementById(`${source}-chat-plus-btn`).onclick = () => {
+                const menu = document.getElementById(`${source}-chat-plus-menu`);
                 menu.style.display = menu.style.display === 'grid' ? 'none' : 'grid';
             };
             
-            document.getElementById('chat-voice-btn').onclick = () => showVoiceInputModal(chatId, chatType, 'wechat');
-            document.getElementById('plus-image-btn').onclick = () => document.getElementById('image-file-input-chat').click();
-            container.insertAdjacentHTML('beforeend', '<input type="file" id="image-file-input-chat" class="file-input" accept="image/*">');
-            document.getElementById('image-file-input-chat').onchange = e => {
+            document.getElementById(`${source}-chat-voice-btn`).onclick = () => showVoiceInputModal(chatId, chatType, source);
+            document.getElementById(`${source}-plus-image-btn`).onclick = () => document.getElementById(`image-file-input-${source}`).click();
+            container.insertAdjacentHTML('beforeend', `<input type="file" id="image-file-input-${source}" class="file-input" accept="image/*">`);
+            document.getElementById(`image-file-input-${source}`).onchange = e => {
                 handleImageUpload(e.target.files[0], dataUrl => {
-                    sendMessage(chatId, chatType, { url: dataUrl, description: "用户发送了一张图片" }, 'image', 'wechat');
+                    sendMessage(chatId, chatType, { url: dataUrl, description: "用户发送了一张图片" }, 'image', source);
                 });
             };
-            document.getElementById('plus-camera-btn').onclick = () => showCameraSimModal(chatId, chatType, 'wechat');
-            document.getElementById('plus-location-btn').onclick = () => showLocationInputModal(chatId, chatType, 'wechat');
-            document.getElementById('plus-transfer-btn').onclick = () => showTransactionModal('transfer', chatId, chatType);
-            document.getElementById('plus-redpacket-btn').onclick = () => showTransactionModal('redPacket', chatId, chatType);
-            document.getElementById('chat-sticker-btn').onclick = () => showPage('sticker-page', renderStickerPage, false, 'wechat');
-            document.getElementById('plus-music-btn').onclick = () => showPage('music-library-page', renderMusicLibraryPage, 'wechat');
-            document.getElementById('plus-code-btn').onclick = () => showHtmlContentModal(chatId, chatType, 'wechat');
-            document.getElementById('plus-diary-btn').onclick = () => showPage('diary-page', renderDiaryPage, chatId);
-            document.getElementById('plus-gift-btn').onclick = () => showGiftShopModal(chatId, chatType);
-            document.getElementById('plus-couple-btn').onclick = () => sendCoupleInvitation(chatId, chatType, 'wechat');
-            document.getElementById('plus-delivery-btn').onclick = () => openDeliveryModal(chatId, chatType);
-            document.getElementById('plus-voice-call-btn').onclick = () => startVoiceCall(chatId, chatType, 'user');
+            document.getElementById(`${source}-plus-camera-btn`).onclick = () => showCameraSimModal(chatId, chatType, source);
+            
+            if (source === 'wechat') {
+                document.getElementById('plus-location-btn').onclick = () => showLocationInputModal(chatId, chatType, 'wechat');
+                document.getElementById('plus-transfer-btn').onclick = () => showTransactionModal('transfer', chatId, chatType);
+                document.getElementById('plus-redpacket-btn').onclick = () => showTransactionModal('redPacket', chatId, chatType);
+                document.getElementById('chat-sticker-btn').onclick = () => showPage('sticker-page', renderStickerPage, false, 'wechat');
+                document.getElementById('plus-music-btn').onclick = () => showPage('music-library-page', renderMusicLibraryPage, 'wechat');
+                document.getElementById('plus-code-btn').onclick = () => showHtmlContentModal(chatId, chatType, 'wechat');
+                document.getElementById('plus-diary-btn').onclick = () => showPage('diary-page', renderDiaryPage, chatId);
+                document.getElementById('plus-gift-btn').onclick = () => showGiftShopModal(chatId, chatType);
+                document.getElementById('plus-couple-btn').onclick = () => sendCoupleInvitation(chatId, chatType, 'wechat');
+                document.getElementById('plus-delivery-btn').onclick = () => openDeliveryModal(chatId, chatType);
+                document.getElementById('plus-voice-call-btn').onclick = () => startVoiceCall(chatId, chatType, 'user');
+            } else {
+                 document.getElementById('forum-chat-sticker-btn').onclick = () => showPage('sticker-page', renderStickerPage, false, 'forum');
+            }
 
-            const multiSelectToolbar = document.getElementById('multi-select-toolbar');
-            const forwardBtn = document.getElementById('multi-select-forward-btn');
-            const deleteBtn = document.getElementById('multi-select-delete-btn');
-            const cancelBtn = document.getElementById('multi-select-cancel-btn');
+            const multiSelectToolbar = document.getElementById(`${source}-multi-select-toolbar`);
+            const forwardBtn = document.getElementById(`${source}-multi-select-forward-btn`);
+            const deleteBtn = document.getElementById(`${source}-multi-select-delete-btn`);
+            const cancelBtn = document.getElementById(`${source}-multi-select-cancel-btn`);
             let multiSelectState = { active: false, selectedIds: new Set() };
 
-            window.startMultiSelectMode = (messageId, source) => {
-                if (source !== 'wechat') return;
+            window.startMultiSelectMode = (messageId, eventSource) => {
+                if (eventSource !== source) return;
                 multiSelectState.active = true;
                 multiSelectState.selectedIds.add(messageId);
                 multiSelectToolbar.classList.add('active');
-                document.querySelector('#conversation-page .chat-input-bar').style.display = 'none';
+                document.querySelector(`#${pageId} .chat-input-bar`).style.display = 'none';
                 updateMultiSelectUI();
             };
 
             const updateMultiSelectUI = () => {
-                document.querySelectorAll('#message-area .message-row').forEach(row => {
+                document.querySelectorAll(`#${source}-message-area .message-row`).forEach(row => {
                     row.classList.add('multi-select-mode');
                     if (multiSelectState.selectedIds.has(parseInt(row.dataset.messageId))) {
                         row.classList.add('selected');
@@ -1609,8 +1616,8 @@
                 multiSelectState.active = false;
                 multiSelectState.selectedIds.clear();
                 multiSelectToolbar.classList.remove('active');
-                document.querySelector('#conversation-page .chat-input-bar').style.display = 'flex';
-                document.querySelectorAll('#message-area .message-row').forEach(row => {
+                document.querySelector(`#${pageId} .chat-input-bar`).style.display = 'flex';
+                document.querySelectorAll(`#${source}-message-area .message-row`).forEach(row => {
                     row.classList.remove('multi-select-mode', 'selected');
                 });
             };
@@ -1619,7 +1626,7 @@
 
             forwardBtn.onclick = () => {
                 if (multiSelectState.selectedIds.size > 0) {
-                    showForwardMessageModal(Array.from(multiSelectState.selectedIds), chatId, chatType, 'wechat');
+                    showForwardMessageModal(Array.from(multiSelectState.selectedIds), chatId, chatType, source);
                     endMultiSelectMode();
                 }
             };
@@ -1627,14 +1634,17 @@
             deleteBtn.onclick = () => {
                 if (multiSelectState.selectedIds.size > 0 && confirm(`确定要删除这 ${multiSelectState.selectedIds.size} 条消息吗？`)) {
                     let chat = chatType === 'group' ? appData.groups.find(g => g.id == chatId) : appData.contacts.find(c => c.id == chatId);
-                    chat.conversation = chat.conversation.filter(msg => !multiSelectState.selectedIds.has(msg.id));
+                    const conversation = source === 'forum' ? chat.forumConversation : chat.conversation;
+                    const updatedConversation = conversation.filter(msg => !multiSelectState.selectedIds.has(msg.id));
+                    if (source === 'forum') chat.forumConversation = updatedConversation;
+                    else chat.conversation = updatedConversation;
                     saveData();
-                    renderMessages(chatId, chatType, 'wechat');
+                    renderMessages(chatId, chatType, source);
                     endMultiSelectMode();
                 }
             };
 
-            document.getElementById('message-area').addEventListener('click', e => {
+            messageArea.addEventListener('click', e => {
                 if (!multiSelectState.active) return;
                 const messageRow = e.target.closest('.message-row');
                 if (messageRow) {
@@ -1661,7 +1671,6 @@
             if (!chat) return;
 
             const conversation = source === 'forum' ? (chat.forumConversation || []) : (chat.conversation || []);
-            const chatSettings = source === 'forum' ? chat.forumChatSettings : appData.settings.beautify;
             
             let html = `
                 <div class="chat-scroll-buttons">
@@ -1694,10 +1703,10 @@
                 const isSent = msg.sender === appData.user.id;
                 let senderObj;
                 if (isSent) {
-                    senderObj = { ...appData.user, avatar: (source === 'forum' && chatSettings?.userAvatar) ? chatSettings.userAvatar : appData.user.avatar };
+                    senderObj = { ...appData.user, avatar: (source === 'forum' && chat.forumChatSettings?.userAvatar) ? chat.forumChatSettings.userAvatar : appData.user.avatar };
                 } else {
                     const charBase = (chatType === 'group' ? (chat.members.find(m => m.id == msg.sender) || {name: '未知', avatar: ''}) : chat);
-                    senderObj = { ...charBase, avatar: (source === 'forum' && chatSettings?.charAvatar) ? chatSettings.charAvatar : charBase.avatar };
+                    senderObj = { ...charBase, avatar: (source === 'forum' && chat.forumChatSettings?.charAvatar) ? chat.forumChatSettings.charAvatar : charBase.avatar };
                 }
                 if (!senderObj) return;
 
@@ -1725,7 +1734,7 @@
                     }
                 }
                 
-                const avatarClickAction = source === 'forum' && !isSent ? `showPage('forum-profile-page', renderForumProfilePage, '${senderObj.id}')` : `triggerPoke('${chatId}', '${chatType}', '${senderObj.id}', '${source}')`;
+                const avatarClickAction = source === 'forum' ? `showPage('forum-profile-page', renderForumProfilePage, '${senderObj.id}')` : '';
 
                 html += `
                     <div class="message-row ${isSent ? 'sent' : 'received'}" data-message-id="${msg.id}">
@@ -2274,8 +2283,8 @@
         }
         
         function showWorldbookEditor(type) {
-            const typeMap = { presets: '预设', styles: '文风', library: '世界书库', forumLibrary: '论坛专属世界书' };
-            const items = appData.worldbooks[type];
+            const typeMap = { presets: '预设', styles: '文风', library: '世界书库', forum: '论坛专属世界书' };
+            const items = appData.worldbooks[type] || [];
             const modalId = 'worldbook-editor-modal';
             const content = `
                 <div class="modal-content" style="width: 95%; max-width: 400px;">
@@ -2298,7 +2307,7 @@
             const isNew = id === null;
             const item = isNew ? { id: Date.now(), name: '', content: '' } : appData.worldbooks[type].find(i => i.id === id);
             if (!item) return;
-            const typeMap = { presets: '预设', styles: '文风', library: '世界书', forumLibrary: '论坛专属世界书' };
+            const typeMap = { presets: '预设', styles: '文风', library: '世界书', forum: '论坛专属世界书' };
             const title = (isNew ? '新建' : '编辑') + typeMap[type];
             const modalId = 'worldbook-item-editor';
             const content = `
@@ -3286,7 +3295,7 @@
                 startVoiceCall(chatId, chatType, 'char');
                 return;
             } else if (pokeMatch) {
-                triggerPoke(chatId, chatType, appData.user.id, source, senderId);
+                triggerPoke(chatId, chatType, appData.user.id, senderId, source);
                 return;
             } else {
                 message = { id: Date.now() + Math.random(), sender: senderId, type: 'text', content: { content: replyText }, timestamp: Date.now() };
@@ -4224,7 +4233,7 @@
                 contact.remark = newRemark.trim();
                 saveData();
                 renderChatSettingsPage(document.getElementById('chat-settings-page'), contactId);
-                renderConversationPage(document.getElementById('conversation-page'), contactId, 'individual');
+                renderConversationPage(document.getElementById('conversation-page'), contactId, 'individual', 'wechat');
             }
         }
 
@@ -4556,7 +4565,7 @@
                     isPinned: false, isStarred: false, mutedMembers: {}
                 };
                 appData.groups.push(newGroup);
-                saveData(true, () => showPage('conversation-page', renderConversationPage, newGroup.id, 'group'));
+                saveData(true, () => showPage('conversation-page', renderConversationPage, newGroup.id, 'group', 'wechat'));
             };
         }
 
@@ -4691,7 +4700,7 @@
                 group.name = newName.trim();
                 saveData();
                 renderGroupChatSettingsPage(document.getElementById('group-chat-settings-page'), groupId);
-                renderConversationPage(document.getElementById('conversation-page'), groupId, 'group');
+                renderConversationPage(document.getElementById('conversation-page'), groupId, 'group', 'wechat');
             }
         }
 
@@ -4788,7 +4797,7 @@
                 html += availableContacts.map(contact => `
                     <div class="list-item">
                         <input type="checkbox" data-member-id="${contact.id}">
-                        <img src="${contact.avatar}" class="avatar">
+                        <imgsrc="${contact.avatar}" class="avatar">
                         <div class="details"><span class="name">${contact.name}</span></div>
                     </div>
                 `).join('');
@@ -5266,7 +5275,600 @@
             renderWalletPage(document.getElementById('wallet-page'));
         }
 
-        // --- New Feature Functions ---
+        // --- Forum App Functions (NEW) ---
+
+        function renderForumApp(container) {
+            const activeTab = container.querySelector('.forum-tab-item.active');
+            renderForumMainContent(activeTab ? activeTab.dataset.page : 'forum-home');
+        }
+
+        function renderForumMainContent(pageType) {
+            const contentArea = document.getElementById('forum-main-content-area');
+            const header = document.getElementById('forum-main-header');
+            const headerRight = document.getElementById('forum-header-right');
+            
+            if (!contentArea || !header || !headerRight) return;
+            
+            contentArea.innerHTML = '';
+            headerRight.innerHTML = '';
+            header.querySelector('.header-back-btn').onclick = goBack;
+
+            switch (pageType) {
+                case 'forum-home':
+                    header.querySelector('.header-title').textContent = '论坛';
+                    headerRight.innerHTML = `<i class="fas fa-sync-alt" onclick="refreshForumPosts()"></i>`;
+                    renderForumHomePage(contentArea);
+                    break;
+                case 'forum-following':
+                    header.querySelector('.header-title').textContent = '关注';
+                    renderForumFollowingPage(contentArea);
+                    break;
+                case 'forum-messages':
+                    header.querySelector('.header-title').textContent = '私信';
+                    renderForumMessagesPage(contentArea);
+                    break;
+                case 'forum-me':
+                    header.querySelector('.header-title').textContent = '我';
+                    renderForumMePage(contentArea);
+                    break;
+            }
+        }
+
+        function renderForumHomePage(container) {
+            container.innerHTML = `
+                <div id="forum-post-feed">
+                    ${appData.forum.posts.length > 0 ? appData.forum.posts.map(post => renderForumPost(post)).join('') : '<div class="loader-container"><div class="loader"></div></div>'}
+                </div>
+                <div class="create-post-fab" onclick="showPage('forum-create-post-page', renderForumCreatePostPage)">
+                    <i class="fas fa-plus"></i>
+                </div>
+            `;
+            if (appData.forum.posts.length === 0) {
+                refreshForumPosts();
+            }
+        }
+
+        function renderForumFollowingPage(container) {
+            const followedCharIds = appData.contacts.filter(c => c.isFollowedByPlayer).map(c => c.id);
+            const followedPosts = appData.forum.posts.filter(p => followedCharIds.includes(p.authorId));
+            container.innerHTML = `
+                <div id="forum-following-feed">
+                    ${followedPosts.length > 0 ? followedPosts.map(post => renderForumPost(post)).join('') : '<p style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">还没有关注的人发布动态</p>'}
+                </div>
+            `;
+        }
+
+        function renderForumMessagesPage(container) {
+            // This is essentially the same as the WeChat chat list, but opens forum chats
+            let html = '<div class="list-view">';
+            const visibleContacts = appData.contacts.filter(c => !appData.settings.blacklist.includes(c.id));
+            
+            const sortedChats = [...visibleContacts].sort((a, b) => {
+                const lastMsgA = a.forumConversation?.[a.forumConversation.length - 1]?.timestamp || 0;
+                const lastMsgB = b.forumConversation?.[b.forumConversation.length - 1]?.timestamp || 0;
+                return lastMsgB - lastMsgA;
+            });
+
+            if (sortedChats.length === 0) {
+                html += '<div style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">暂无私信</div>';
+            } else {
+                sortedChats.forEach(chat => {
+                    const lastMessage = chat.forumConversation && chat.forumConversation.length > 0
+                        ? chat.forumConversation[chat.forumConversation.length - 1]
+                        : null;
+                    
+                    let subtext = '...';
+                    if (lastMessage) {
+                        subtext = lastMessage.type === 'text' ? lastMessage.content.content : `[${lastMessage.type}]`;
+                    }
+
+                    html += `
+                        <div class="list-item" onclick="showPage('forum-conversation-page', renderConversationPage, '${chat.id}', 'individual', 'forum')">
+                            <img src="${chat.avatar}" class="avatar">
+                            <div class="details">
+                                <span class="name">${chat.remark || chat.name}</span>
+                                <p class="subtext">${subtext.substring(0, 25)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderForumMePage(container) {
+            const profile = appData.user.forumProfile;
+            container.innerHTML = `
+                <div id="forum-profile-page" class="page active" style="padding-top: 0;">
+                    <div class="content-area" style="padding-top: 0;">
+                        <div class="profile-header">
+                            <img src="${appData.user.avatar}" class="avatar">
+                            <p class="name">${appData.user.nickname}</p>
+                            <p class="bio">${profile.bio}</p>
+                            <div class="profile-stats">
+                                <div class="stat"><span class="count">${profile.posts.length}</span><p class="label">帖子</p></div>
+                                <div class="stat"><span class="count">${profile.followers}</span><p class="label">粉丝</p></div>
+                                <div class="stat"><span class="count">${appData.contacts.filter(c => c.isFollowedByPlayer).length}</span><p class="label">关注</p></div>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="form-btn" onclick="showPage('forum-profile-editor-page', renderForumProfileEditorPage, 'user')">编辑资料</button>
+                        </div>
+                        <div id="user-post-feed">
+                            ${profile.posts.map(post => renderForumPost(post)).join('') || '<p style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">还没有发布帖子</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function refreshForumPosts() {
+            const feed = document.getElementById('forum-post-feed');
+            if (feed) feed.innerHTML = `<div class="loader-container"><div class="loader"></div></div>`;
+            
+            const forumWorldbook = (appData.worldbooks.forum || []).map(item => item.content).join('\n\n');
+            const topicList = "表白墙、吃瓜、深夜涩情、魅魔论坛、少儿不宜色欲拉满、美食的做法、音乐分享、分享好物、日记记录、做饭教程、手账分享、美化分享、分享食谱、分享穿搭、 Bgd娃娃分享、 Bgd娃娃搭配分享、周边手办、谷子周边、漫展、COSPLAY、绘画分享、小说推文、漫画分享、日式料理、日式、日系、日系穿搭、日系美食、日系妆容、日系发型、日料、韩系、韩系穿搭、韩系发型、韩系妆容、韩式、泰系妆容、泰系、舞蹈、爵士舞、拉丁舞、调酒、夜店、赌场、黑社会、黑道、风云人物榜、泰国、欧美、时尚、抽象搞笑、游戏解说、电影解说、舞蹈视频、深夜食堂、黑暗料理分享、游戏视频、游戏、算卦、修仙、玄幻、诡异、恐怖、中式恐怖、西式恐怖、Steam游戏、悬疑、推理、海龟汤、狼人杀、真心话大冒险、绘画、画师、画师推荐、艺术、头像壁纸推荐、后宫、谋权、重生、穿越、双男主、双女主、言情、四爱、bl、原耽、耽美、百合、拉拉、泛性恋、无性别、中性、演唱会、娱乐圈、科学、农业、建设、银行、AI智能、AI绘画、AI视频、AI聊天、原创、原创设计、中国台湾、中国香港、中国澳门、宫斗、宗教、俱乐部、校园、都市、幻想类、未来幻想、古代、架空、无限流、外星生物、外来生物、外星人、案件解说、情人节推荐好物、网店分享、美甲、美睫、美食、美妆、护肤、百货超市、百货商店、冷门小众、聊天截图、避雷、随笔小说、名著经典、港风、国外旅游、暗网、杀人分尸、猎奇、血腥暴力、重口、心理学、学习讨论、论文答辩、明星八卦、营销号解说、正经医学科普、医学人体结构科普、医学生理结构科普、自慰日记、sm、调教、少儿不宜🔞性爱经验、性爱姿势体位分享、分享女优、分享🔞片、分享🔞链接，分享🔞瓜条、性爱🔞视频流出";
+            const prompt = `请你扮演一个论坛内容生成器。根据以下规则，生成10条风格各异的论坛帖子。
+            规则:
+            1. 从以下主题列表中随机选择10个不同主题：${topicList}
+            2. 结合论坛专属世界书：${forumWorldbook}
+            3. 随机选择一个角色人设来发布帖子，角色列表：${appData.contacts.map(c => c.name).join(', ')}。
+            4. 严格遵循以下JSON格式输出，不要有任何额外解释或文字，直接输出一个包含10个帖子对象的JSON数组:
+            [
+              {
+                "authorName": "角色名",
+                "title": "帖子标题 (2-20字)",
+                "content": "帖子正文 (50-300字，内容需符合主题和角色人设)"
+              },
+              ...
+            ]`;
+
+            try {
+                const aiResponse = await callApi( [{ role: 'user', content: prompt }], new AbortController().signal);
+                const newPostsData = JSON.parse(aiResponse);
+
+                const newPosts = newPostsData.map(p => {
+                    const author = appData.contacts.find(c => c.name === p.authorName) || { id: `npc_${Date.now()}`, name: p.authorName, avatar: 'https://source.unsplash.com/random/100x100?person' };
+                    return {
+                        id: Date.now() + Math.random(),
+                        authorId: author.id,
+                        authorName: author.name,
+                        authorAvatar: author.avatar,
+                        title: p.title,
+                        content: p.content,
+                        timestamp: Date.now() - Math.floor(Math.random() * 86400000), // Random time in last 24h
+                        likes: [],
+                        comments: [],
+                        bookmarks: [],
+                        shares: 0
+                    };
+                });
+                
+                appData.forum.posts = [...newPosts, ...appData.forum.posts].slice(0, 100); // Prepend new posts
+                saveData();
+                if (feed) {
+                    feed.innerHTML = appData.forum.posts.map(post => renderForumPost(post)).join('');
+                }
+            } catch (e) {
+                console.error("Error refreshing forum posts:", e);
+                if (feed) feed.innerHTML = `<p style="text-align:center; color:red; padding:50px;">帖子加载失败: ${e.message}</p>`;
+            }
+        }
+
+        function renderForumPost(post) {
+            const author = findUserById(post.authorId);
+            if (!author) return ''; // Skip post if author not found
+            
+            const isLiked = appData.user.forumProfile.likedPosts.includes(post.id);
+            const isBookmarked = appData.user.forumProfile.bookmarkedPosts.includes(post.id);
+
+            return `
+                <div class="forum-post" onclick="showPage('forum-post-detail-page', renderForumPostDetailPage, ${post.id})">
+                    <div class="post-header">
+                        <img src="${author.avatar}" class="avatar" onclick="event.stopPropagation(); showPage('forum-profile-page', renderForumProfilePage, '${author.id}')">
+                        <div class="author-info">
+                            <p class="name">${author.name || author.nickname}</p>
+                            <p class="timestamp">${new Date(post.timestamp).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <h4 class="post-title">${post.title}</h4>
+                    <div class="post-content-preview">${post.content}</div>
+                    <div class="post-footer">
+                        <div class="action" onclick="event.stopPropagation(); toggleForumPostLike(${post.id})">
+                            <i class="fas fa-heart ${isLiked ? 'liked' : ''}"></i> <span>${post.likes.length}</span>
+                        </div>
+                        <div class="action">
+                            <i class="fas fa-comment"></i> <span>${post.comments.length}</span>
+                        </div>
+                        <div class="action" onclick="event.stopPropagation(); toggleForumPostBookmark(${post.id})">
+                            <i class="fas fa-bookmark ${isBookmarked ? 'bookmarked' : ''}"></i> <span>${post.bookmarks.length}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function findUserById(id) {
+            if (id === 'user') return appData.user;
+            return appData.contacts.find(c => c.id == id);
+        }
+
+        function renderForumProfilePage(container, profileId) {
+            const isUser = profileId === 'user';
+            const profileOwner = isUser ? appData.user : appData.contacts.find(c => c.id == profileId);
+            if (!profileOwner) { goBack(); return; }
+
+            const profileData = isUser ? appData.user.forumProfile : {
+                bio: profileOwner.persona.substring(0, 100),
+                followers: profileOwner.forumFollowers,
+                following: profileOwner.forumFollowing,
+                posts: appData.forum.posts.filter(p => p.authorId == profileId)
+            };
+            
+            const isFollowing = isUser ? false : profileOwner.isFollowedByPlayer;
+            const isCouple = isUser ? false : profileOwner.isCouple;
+
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></div>
+                    <span class="header-title">${profileOwner.name || profileOwner.nickname}</span>
+                </div>
+                <div class="content-area" style="padding-top: 0;">
+                    <div class="profile-header">
+                        <img src="${profileOwner.avatar}" class="avatar">
+                        <p class="name">${profileOwner.name || profileOwner.nickname} ${isCouple ? '<span class="couple-badge"><i class="fas fa-heart"></i></span>' : ''}</p>
+                        <p class="bio">${profileData.bio}</p>
+                        <div class="profile-stats">
+                            <div class="stat"><span class="count">${profileData.posts.length}</span><p class="label">帖子</p></div>
+                            <div class="stat"><span class="count">${profileData.followers}</span><p class="label">粉丝</p></div>
+                            <div class="stat"><span class="count">${profileData.following}</span><p class="label">关注</p></div>
+                        </div>
+                    </div>
+                    ${!isUser ? `
+                    <div class="profile-actions">
+                        <button class="form-btn" style="background-color: ${isFollowing ? '#aaa' : 'var(--wechat-green)'};" onclick="toggleForumFollow('${profileId}')">${isFollowing ? '已关注' : '关注'}</button>
+                        <button class="form-btn" style="background-color: var(--wechat-blue);" onclick="showPage('forum-conversation-page', renderConversationPage, '${profileId}', 'individual', 'forum')">私信</button>
+                    </div>
+                    ` : ''}
+                    <div id="profile-post-feed">
+                        ${profileData.posts.map(post => renderForumPost(post)).join('') || '<p style="text-align:center; padding: 50px; color: var(--wechat-text-secondary);">还没有发布帖子</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleForumFollow(charId) {
+            const char = appData.contacts.find(c => c.id == charId);
+            if (!char) return;
+            
+            if (char.isFollowedByPlayer) {
+                if (char.isCouple && !confirm("取消关注会解除情侣关系，确定吗？")) {
+                    return;
+                }
+                char.isFollowedByPlayer = false;
+                char.forumFollowers--;
+                if (char.isCouple) char.isCouple = false;
+            } else {
+                char.isFollowedByPlayer = true;
+                char.forumFollowers++;
+            }
+            saveData();
+            renderForumProfilePage(document.getElementById('forum-profile-page'), charId);
+        }
+
+        function renderForumProfileEditorPage(container) {
+            const profile = appData.user.forumProfile;
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></div>
+                    <span class="header-title">编辑论坛资料</span>
+                </div>
+                <div class="content-area form-page">
+                    <div class="form-group">
+                        <label>个人简介</label>
+                        <textarea id="forum-bio-input" rows="5">${profile.bio}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>粉丝数 (可修改)</label>
+                        <input type="number" id="forum-followers-input" value="${profile.followers}">
+                    </div>
+                    <button class="form-btn" onclick="saveForumProfile()">保存</button>
+                </div>
+            `;
+        }
+
+        function saveForumProfile() {
+            appData.user.forumProfile.bio = document.getElementById('forum-bio-input').value;
+            appData.user.forumProfile.followers = parseInt(document.getElementById('forum-followers-input').value) || 0;
+            saveData(true, goBack);
+        }
+
+        function renderForumCreatePostPage(container) {
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()">取消</div>
+                    <span class="header-title">发布帖子</span>
+                    <div class="header-right" style="font-size: 16px; color: white; background: var(--wechat-green); padding: 5px 12px; border-radius: 4px;" onclick="createForumPost()">发布</div>
+                </div>
+                <div class="content-area form-page">
+                    <div class="form-group">
+                        <input type="text" id="forum-post-title" placeholder="标题">
+                    </div>
+                    <div class="form-group">
+                        <textarea id="forum-post-content" rows="15" placeholder="分享你的想法..."></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createForumPost() {
+            const title = document.getElementById('forum-post-title').value.trim();
+            const content = document.getElementById('forum-post-content').value.trim();
+            if (!title || !content) {
+                showToast('标题和内容不能为空', 'error');
+                return;
+            }
+
+            const newPost = {
+                id: Date.now(),
+                authorId: 'user',
+                authorName: appData.user.nickname,
+                authorAvatar: appData.user.avatar,
+                title,
+                content,
+                timestamp: Date.now(),
+                likes: [],
+                comments: [],
+                bookmarks: [],
+                shares: 0
+            };
+
+            appData.forum.posts.unshift(newPost);
+            appData.user.forumProfile.posts.unshift(newPost);
+            saveData(true, goBack);
+        }
+
+        function renderForumPostDetailPage(container, postId) {
+            const post = appData.forum.posts.find(p => p.id == postId);
+            if (!post) { goBack(); return; }
+
+            const author = findUserById(post.authorId);
+            const isLiked = appData.user.forumProfile.likedPosts.includes(post.id);
+            const isBookmarked = appData.user.forumProfile.bookmarkedPosts.includes(post.id);
+
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></div>
+                    <span class="header-title">帖子详情</span>
+                    <div class="header-right" onclick="refreshForumComments(${postId})"><i class="fas fa-sync-alt"></i></div>
+                </div>
+                <div class="content-area" style="padding: 15px;">
+                    <div class="post-header">
+                        <img src="${author.avatar}" class="avatar" onclick="showPage('forum-profile-page', renderForumProfilePage, '${author.id}')">
+                        <div class="author-info">
+                            <p class="name">${author.name || author.nickname}</p>
+                            <p class="timestamp">${new Date(post.timestamp).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 15px;">${post.title}</h3>
+                    <p style="line-height: 1.6; white-space: pre-wrap;">${post.content}</p>
+                    <div class="post-footer" style="justify-content: flex-end; gap: 20px;">
+                        <div class="action" onclick="toggleForumPostLike(${post.id})"><i class="fas fa-heart ${isLiked ? 'liked' : ''}"></i> <span>${post.likes.length}</span></div>
+                        <div class="action"><i class="fas fa-comment"></i> <span>${post.comments.length}</span></div>
+                        <div class="action" onclick="toggleForumPostBookmark(${post.id})"><i class="fas fa-bookmark ${isBookmarked ? 'bookmarked' : ''}"></i> <span>${post.bookmarks.length}</span></div>
+                    </div>
+                    <div class="list-divider"></div>
+                    <h4>评论</h4>
+                    <div id="forum-comment-section">
+                        ${post.comments.map(c => renderForumComment(c)).join('') || '<p style="color: var(--wechat-text-secondary);">还没有评论</p>'}
+                    </div>
+                </div>
+                <div class="chat-input-bar">
+                    <input type="text" id="forum-comment-input" placeholder="发表你的评论...">
+                </div>
+            `;
+
+            document.getElementById('forum-comment-input').onkeydown = e => {
+                if (e.key === 'Enter') {
+                    addForumComment(postId, e.target.value);
+                    e.target.value = '';
+                }
+            };
+        }
+
+        function renderForumComment(comment) {
+            const author = findUserById(comment.authorId);
+            return `
+                <div class="forum-post" style="border-bottom: none; padding: 10px 0;">
+                    <div class="post-header">
+                        <img src="${author.avatar}" class="avatar" style="width: 32px; height: 32px;">
+                        <div class="author-info">
+                            <p class="name" style="font-size: 14px;">${author.name || author.nickname}</p>
+                            <p class="timestamp">${new Date(comment.timestamp).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div class="post-content-preview" style="margin-left: 42px;">${comment.content}</div>
+                </div>
+            `;
+        }
+
+        function toggleForumPostLike(postId) {
+            const post = appData.forum.posts.find(p => p.id == postId);
+            const userProfile = appData.user.forumProfile;
+            if (!post) return;
+
+            const likeIndex = post.likes.indexOf('user');
+            const profileLikeIndex = userProfile.likedPosts.indexOf(postId);
+
+            if (likeIndex > -1) {
+                post.likes.splice(likeIndex, 1);
+                if (profileLikeIndex > -1) userProfile.likedPosts.splice(profileLikeIndex, 1);
+            } else {
+                post.likes.push('user');
+                if (profileLikeIndex === -1) userProfile.likedPosts.push(postId);
+            }
+            saveData();
+            // Re-render based on current page
+            if (document.getElementById('forum-post-detail-page').classList.contains('active')) {
+                renderForumPostDetailPage(document.getElementById('forum-post-detail-page'), postId);
+            } else {
+                document.getElementById('forum-post-feed').innerHTML = appData.forum.posts.map(p => renderForumPost(p)).join('');
+            }
+        }
+
+        function toggleForumPostBookmark(postId) {
+            const post = appData.forum.posts.find(p => p.id == postId);
+            const userProfile = appData.user.forumProfile;
+            if (!post) return;
+
+            const bookmarkIndex = post.bookmarks.indexOf('user');
+            const profileBookmarkIndex = userProfile.bookmarkedPosts.indexOf(postId);
+
+            if (bookmarkIndex > -1) {
+                post.bookmarks.splice(bookmarkIndex, 1);
+                if (profileBookmarkIndex > -1) userProfile.bookmarkedPosts.splice(profileBookmarkIndex, 1);
+            } else {
+                post.bookmarks.push('user');
+                if (profileBookmarkIndex === -1) userProfile.bookmarkedPosts.push(postId);
+            }
+            saveData();
+            if (document.getElementById('forum-post-detail-page').classList.contains('active')) {
+                renderForumPostDetailPage(document.getElementById('forum-post-detail-page'), postId);
+            } else {
+                document.getElementById('forum-post-feed').innerHTML = appData.forum.posts.map(p => renderForumPost(p)).join('');
+            }
+        }
+
+        function addForumComment(postId, content) {
+            if (!content.trim()) return;
+            const post = appData.forum.posts.find(p => p.id == postId);
+            if (!post) return;
+
+            const newComment = {
+                id: Date.now(),
+                authorId: 'user',
+                content,
+                timestamp: Date.now()
+            };
+            post.comments.push(newComment);
+            saveData();
+            renderForumPostDetailPage(document.getElementById('forum-post-detail-page'), postId);
+        }
+
+        async function refreshForumComments(postId) {
+            const post = appData.forum.posts.find(p => p.id == postId);
+            if (!post) return;
+            
+            const prompt = `你是一个论坛评论生成器。针对以下帖子，请生成3-5条符合角色人设的评论。
+            帖子标题: ${post.title}
+            帖子内容: ${post.content}
+            角色列表: ${appData.contacts.map(c => c.name).join(', ')}
+            请严格遵循以下JSON格式，直接输出一个JSON数组，不要有任何额外解释:
+            [
+              { "authorName": "角色名", "comment": "评论内容 (10-50字)" },
+              ...
+            ]`;
+
+            try {
+                const aiResponse = await callApi([{ role: 'user', content: prompt }], new AbortController().signal);
+                const newCommentsData = JSON.parse(aiResponse);
+                
+                newCommentsData.forEach(c => {
+                    const author = appData.contacts.find(char => char.name === c.authorName) || { id: `npc_${Date.now()}`, name: c.authorName };
+                    post.comments.push({
+                        id: Date.now() + Math.random(),
+                        authorId: author.id,
+                        content: c.comment,
+                        timestamp: Date.now()
+                    });
+                });
+                saveData();
+                renderForumPostDetailPage(document.getElementById('forum-post-detail-page'), postId);
+            } catch (e) {
+                showToast(`刷新评论失败: ${e.message}`, 'error');
+            }
+        }
+
+        function renderForumChatSettingsPage(container, charId) {
+            const contact = appData.contacts.find(c => c.id == charId);
+            if (!contact) { goBack(); return; }
+            
+            const chatSettings = contact.forumChatSettings || {};
+
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i><span>返回</span></div>
+                    <span class="header-title">私信设置</span>
+                </div>
+                <div class="content-area">
+                    <div class="list-divider"></div>
+                    <div class="list-item" onclick="setContactRemark(${charId})">
+                        <div class="details"><span class="name">设置备注</span></div><i class="fas fa-chevron-right chevron"></i>
+                    </div>
+                    <div class="list-item" onclick="document.getElementById('forum-chat-bg-input').click()">
+                        <div class="details"><span class="name">设置聊天背景</span></div><i class="fas fa-chevron-right chevron"></i>
+                    </div>
+                    <input type="file" id="forum-chat-bg-input" class="file-input" accept="image/*" onchange="handleForumChatBgUpload(this.files[0], '${charId}')">
+                    <div class="list-item" onclick="document.getElementById('forum-user-avatar-input').click()">
+                        <div class="details"><span class="name">更换我的头像 (仅此聊天)</span></div><i class="fas fa-chevron-right chevron"></i>
+                    </div>
+                    <input type="file" id="forum-user-avatar-input" class="file-input" accept="image/*" onchange="handleForumAvatarUpload(this.files[0], '${charId}', 'user')">
+                    <div class="list-item" onclick="document.getElementById('forum-char-avatar-input').click()">
+                        <div class="details"><span class="name">更换对方头像 (仅此聊天)</span></div><i class="fas fa-chevron-right chevron"></i>
+                    </div>
+                    <input type="file" id="forum-char-avatar-input" class="file-input" accept="image/*" onchange="handleForumAvatarUpload(this.files[0], '${charId}', 'char')">
+                    <div class="list-divider"></div>
+                    <div class="list-item" onclick="clearChatHistory(${charId}, 'forum')">
+                        <div class="details"><span class="name">清空聊天记录</span></div>
+                    </div>
+                    <div class="list-divider"></div>
+                    <div class="list-item" onclick="blockContact(${charId})">
+                        <div class="details"><span class="name" style="color: var(--wechat-red);">拉黑</span></div>
+                    </div>
+                    <div class="list-item" onclick="deleteContact(${charId})">
+                        <div class="details"><span class="name" style="color: var(--wechat-red);">删除好友</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleForumChatBgUpload(file, charId) {
+            handleImageUpload(file, url => {
+                const contact = appData.contacts.find(c => c.id == charId);
+                if (contact) {
+                    contact.forumChatSettings.background = url;
+                    saveData(true);
+                    // Apply background if in chat
+                    const messageArea = document.getElementById('forum-message-area');
+                    if (messageArea) {
+                        messageArea.style.backgroundImage = `url(${url})`;
+                    }
+                }
+            });
+        }
+
+        function handleForumAvatarUpload(file, charId, avatarType) {
+            handleImageUpload(file, url => {
+                const contact = appData.contacts.find(c => c.id == charId);
+                if (contact) {
+                    if (avatarType === 'user') {
+                        contact.forumChatSettings.userAvatar = url;
+                    } else {
+                        contact.forumChatSettings.charAvatar = url;
+                    }
+                    saveData(true);
+                    // Re-render messages if in chat
+                    if (appData.forum.activeChat.id == charId) {
+                        renderMessages(charId, 'individual', 'forum');
+                    }
+                }
+            });
+        }
+
+        // --- New Feature Functions (End) ---
+
+        // --- New Feature Functions (Continued) ---
 
         // 全局自定义主题
         function renderGlobalThemeEditorPage(container) {
@@ -6277,7 +6879,7 @@
             } else {
                 const activationInput = document.getElementById('activation-input');
                 document.getElementById('activation-btn').onclick = () => {
-                    if (activationInput.value.toUpperCase() === 'EVOL还是LOVE') {
+                    if(activationInput.value.toUpperCase() === 'EVOL还是LOVE') {
                         localStorage.setItem('lovelyPhoneActivated', 'true');
                         activationModal.style.display = 'none';
                         phoneBody.style.display = 'flex';
