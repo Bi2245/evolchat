@@ -131,7 +131,9 @@
 
         /* --- 手机外壳 --- */
         .phone-container { width: var(--phone-width); height: var(--phone-height); background: var(--phone-border-color); border-radius: 44px; box-shadow: var(--phone-shadow), 0 0 0 1px var(--phone-edge-highlight); display: flex; flex-direction: column; overflow: hidden; position: relative; border: var(--phone-border-width) solid var(--phone-border-color); transition: all 0.3s ease; backdrop-filter: var(--phone-backdrop-filter, none); }
+        .phone-container.fullscreen { width: 100vw; height: 100vh; border-radius: 0; border: none; }
         .screen { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; background-color: var(--wechat-bg); border-radius: 34px; overflow: hidden; }
+        .phone-container.fullscreen .screen { border-radius: 0; }
         
         /* --- 状态栏 & 通知栏 --- */
         .status-bar { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; color: black; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; font-weight: 500; position: absolute; top: 0; left: 0; right: 0; z-index: 100; cursor: pointer; }
@@ -181,9 +183,9 @@
 
         /* --- 锁屏 & 主屏幕 --- */
         #lock-screen-page { background-image: var(--lock-screen-wallpaper); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 80px 20px; box-sizing: border-box; z-index: 1000; }
-        .lock-screen-time { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); text-align: center; }
-        .lock-screen-time .time { font-size: 80px; font-weight: 200; }
-        .lock-screen-time .date { font-size: 20px; font-weight: 300; }
+        .lock-screen-time-container { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); text-align: center; }
+        .lock-screen-time-container .time { font-size: 80px; font-weight: 200; }
+        .lock-screen-time-container .date { font-size: 18px; font-weight: 300; margin-top: 5px; }
         .slide-to-unlock { width: 250px; height: 50px; background: rgba(0,0,0,0.3); border-radius: 25px; display: flex; align-items: center; padding: 0 5px; position: relative; overflow: hidden; cursor: pointer; }
         .slide-to-unlock-text { color: rgba(255,255,255,0.7); margin-left: 50px; font-size: 16px; }
         .slide-handle { width: 40px; height: 40px; background: white; border-radius: 50%; position: absolute; left: 5px; top: 5px; display: flex; justify-content: center; align-items: center; color: #555; font-size: 20px; }
@@ -197,7 +199,9 @@
 
         #home-screen-page { background-image: var(--home-screen-background-image); background-size: cover; background-position: center; }
         #home-screen-page .content-area { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding-top: 50px; }
-        #home-screen-time { font-size: 50px; font-weight: 300; color: var(--home-screen-font-color); text-shadow: 0 1px 5px rgba(0,0,0,0.3); }
+        .home-screen-time-container { text-align: center; color: var(--home-screen-font-color); text-shadow: 0 1px 5px rgba(0,0,0,0.3); }
+        .home-screen-time-container .time { font-size: 50px; font-weight: 300; }
+        .home-screen-time-container .date { font-size: 18px; font-weight: 400; margin-top: 2px; }
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--app-icon-gap); padding: 20px; }
         .app-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-align: center; }
         .app-icon .icon-bg { width: var(--app-icon-size); height: var(--app-icon-size); border-radius: var(--app-icon-radius); background-size: cover; background-position: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -325,7 +329,7 @@
         .couple-invitation-bubble .actions { display: flex; gap: 15px; margin-top: 10px; }
         .couple-invitation-bubble .actions button { padding: 8px 20px; border-radius: 6px; border: 1px solid var(--wechat-border-color); cursor: pointer; }
         .couple-invitation-bubble .actions .accept-btn { background: var(--wechat-green); color: white; }
-        body.dark-mode .couple-invitation-bubble { background-color: #2c2c2e; border-color: #3a3a3c; }
+        body.dark-mode .couple-invitation-bubble { background-color:#2c2c2e; border-color: #3a3a3c; }
         .translated-text-bubble, .voice-transcribed-bubble { background: var(--wechat-nav-bg); color: var(--global-font-color); padding: 10px 14px; border-radius: 6px; margin-top: 5px; font-size: calc(var(--font-size-base) - 1px); border: 0.5px solid var(--wechat-border-color); max-width: calc(var(--phone-width) - 120px); word-break: break-word; position: relative; cursor: pointer; }
         .translated-text-bubble::before { content: '[译文]'; font-weight: bold; color: var(--wechat-blue); margin-right: 5px; }
         .music-bubble { background: #fff; color: var(--global-font-color); padding: 10px 14px; border-radius: 6px; border: 0.5px solid var(--wechat-border-color); max-width: calc(var(--phone-width) - 120px); word-break: break-word; cursor: pointer; }
@@ -568,9 +572,9 @@
 
             <!-- 锁屏页面 -->
             <div id="lock-screen-page" class="page no-transition">
-                <div class="lock-screen-time">
+                <div class="lock-screen-time-container">
                     <div class="time" id="lock-screen-clock">09:41</div>
-                    <div class="date" id="lock-screen-date">1月1日 星期一</div>
+                    <div class="date" id="lock-screen-date">2025年1月1日 星期一</div>
                 </div>
                 <div class="slide-to-unlock" id="slide-to-unlock-bar">
                     <div class="slide-handle" id="slide-handle"><i class="fas fa-chevron-right"></i></div>
@@ -592,7 +596,10 @@
             <!-- 主屏幕 -->
             <div id="home-screen-page" class="page no-transition">
                 <div class="content-area">
-                    <div id="home-screen-time">09:41</div>
+                    <div class="home-screen-time-container">
+                        <div class="time" id="home-screen-time">09:41</div>
+                        <div class="date" id="home-screen-date">2025年1月1日 星期一</div>
+                    </div>
                     <div class="app-grid" id="app-grid"></div>
                 </div>
             </div>
@@ -699,6 +706,7 @@
             <div id="lock-screen-settings-page" class="page sub-page form-page"></div>
             <div id="font-color-settings-page" class="page sub-page form-page"></div>
             <div id="battery-settings-page" class="page sub-page form-page"></div>
+            <div id="display-settings-page" class="page sub-page"></div>
             <!-- Forum App Pages -->
             <div id="forum-create-post-page" class="page sub-page form-page"></div>
             <div id="forum-post-detail-page" class="page sub-page"></div>
@@ -734,7 +742,7 @@
     <script>
         // ========== 通用数据管理器 (IndexedDB) ==========
         class UniversalDataManager {
-            constructor(dbName = 'WeChatSimulatorDB_v23', storeName = 'appDataStore') { // Version bump
+            constructor(dbName = 'WeChatSimulatorDB_v24', storeName = 'appDataStore') { // Version bump
                 this.dbName = dbName;
                 this.storeName = storeName;
                 this.db = null;
@@ -842,7 +850,7 @@
             },
             contacts: [], groups: [], moments: [],
             stickers: { packs: [] },
-            worldbooks: { presets: [], styles: [], library: [], forum: '' },
+            worldbooks: { presets: [], styles: [], library: [], forum: [] },
             forum: {
                 posts: [],
                 activeChat: { id: null, type: null }
@@ -897,6 +905,7 @@
                     ringtone: ''
                 },
                 dnd: false,
+                displayMode: 'default' // 'default' or 'fullscreen'
             },
             music: {
                 library: [], favorites: [], currentSongId: null, isPlaying: false,
@@ -911,7 +920,7 @@
             },
             longTermMemory: {},
             activeChat: { id: null, type: null },
-            version: '23.0' // Version bump
+            version: '24.0' // Version bump
         };
 
         async function loadData() {
@@ -920,64 +929,68 @@
                 appData = savedData ? savedData : JSON.parse(JSON.stringify(defaultAppData));
                 
                 // --- Data migration and validation (FIREWALL) ---
-                if (!appData.forum) appData.forum = JSON.parse(JSON.stringify(defaultAppData.forum));
-                if (!appData.notifications) appData.notifications = [];
-                if (!appData.user.forumProfile) appData.user.forumProfile = JSON.parse(JSON.stringify(defaultAppData.user.forumProfile));
-                if (!Array.isArray(appData.user.forumProfile.following)) appData.user.forumProfile.following = [];
-                if (!appData.settings.beautify.appIcons.forum) appData.settings.beautify.appIcons.forum = defaultAppData.settings.beautify.appIcons.forum;
-                if (!appData.settings.beautify.batteryIcon) appData.settings.beautify.batteryIcon = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.batteryIcon));
-                if (!appData.settings.beautify.lockScreen) appData.settings.beautify.lockScreen = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.lockScreen));
-                if (!appData.settings.beautify.homeScreenFontColor) appData.settings.beautify.homeScreenFontColor = defaultAppData.settings.beautify.homeScreenFontColor;
-                if (!appData.settings.beautify.globalFontColor) appData.settings.beautify.globalFontColor = defaultAppData.settings.beautify.globalFontColor;
-                if (!appData.settings.beautify.appIcons) appData.settings.beautify.appIcons = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.appIcons));
-                if (!appData.settings.beautify.homeScreenWallpaper) appData.settings.beautify.homeScreenWallpaper = defaultAppData.settings.beautify.homeScreenWallpaper;
-                if (appData.settings.beautify.appIconSize === undefined) appData.settings.beautify.appIconSize = defaultAppData.settings.beautify.appIconSize;
-                if (appData.settings.beautify.appIconGap === undefined) appData.settings.beautify.appIconGap = defaultAppData.settings.beautify.appIconGap;
-                if (appData.settings.beautify.appIconRadius === undefined) appData.settings.beautify.appIconRadius = defaultAppData.settings.beautify.appIconRadius;
-                if (appData.settings.dnd === undefined) appData.settings.dnd = false;
-                if (!appData.user.bankCards) appData.user.bankCards = [];
-                if (!appData.settings.beautify.globalThemeArchives) appData.settings.beautify.globalThemeArchives = [{}, {}, {}, {}, {}];
-                if (appData.settings.beautify.activeGlobalThemeSlot === undefined) appData.settings.beautify.activeGlobalThemeSlot = -1;
-                if (!appData.user.nickname) { appData.user.nickname = appData.user.name || ' '; delete appData.user.name; }
-                if (appData.user.persona) delete appData.user.persona;
-                if (appData.user.address === undefined) appData.user.address = '';
-                if (!appData.user.wallet?.currency) appData.user.wallet.currency = 'CNY';
-                if (!appData.settings.charLanguage) appData.settings.charLanguage = 'zh-CN';
-                if (!appData.settings.notifications) appData.settings.notifications = JSON.parse(JSON.stringify(defaultAppData.settings.notifications));
-                if (!appData.user.personas) appData.user.personas = [];
-                if (!appData.delivery) appData.delivery = JSON.parse(JSON.stringify(defaultAppData.delivery));
-                if (!appData.settings.beautify.phoneFrame) appData.settings.beautify.phoneFrame = 'black';
-                if (!appData.settings.beautify.avatarShape) appData.settings.beautify.avatarShape = 'rounded';
-                if (appData.settings.beautify.voiceBubbleCss) delete appData.settings.beautify.voiceBubbleCss; // Deprecated
-                if (!appData.settings.beautify.screenWidth) appData.settings.beautify.screenWidth = 380;
-                if (!appData.settings.beautify.screenHeight) appData.settings.beautify.screenHeight = 820;
-                if (!appData.worldbooks) appData.worldbooks = { presets: [], styles: [], library: [], forum: '' };
-                if (appData.worldbooks.forum === undefined) appData.worldbooks.forum = '';
-                if (!appData.longTermMemory) appData.longTermMemory = {};
-                if (!appData.settings.api.repetition_penalty) appData.settings.api.repetition_penalty = 0.69;
-                if (!appData.settings.api.presets) appData.settings.api.presets = [];
-                if (!appData.music.playerImage) appData.music.playerImage = defaultAppData.music.playerImage;
-                if (!appData.music.playerBackground) appData.music.playerBackground = defaultAppData.music.playerBackground;
-                if (!appData.settings.beautify.redPacketBubbleCss) appData.settings.beautify.redPacketBubbleCss = '';
-                if (!appData.settings.beautify.transferBubbleCss) appData.settings.beautify.transferBubbleCss = '';
-                
-                appData.contacts.forEach(c => {
-                    if (c.isPinned === undefined) c.isPinned = false;
-                    if (c.isStarred === undefined) c.isStarred = false;
-                    if (c.lastMomentPostTime === undefined) c.lastMomentPostTime = 0;
-                    if (c.boundPersonaId === undefined) c.boundPersonaId = null;
-                    if (c.isCouple === undefined) c.isCouple = false;
-                    if (!c.pokeSettings) c.pokeSettings = { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } };
-                    if (c.forumFollowers === undefined) c.forumFollowers = Math.floor(Math.random() * 10000);
-                    if (c.forumFollowing === undefined) c.forumFollowing = Math.floor(Math.random() * 500);
-                    if (c.chatSettings === undefined) c.chatSettings = { background: '', userAvatar: '', charAvatar: '' };
-                    if (!c.wallet) c.wallet = { balance: Math.floor(Math.random() * 500000) }; // Give chars some money
-                });
-                
-                // Default follow all chars
-                const allCharIds = appData.contacts.map(c => c.id);
-                appData.user.forumProfile.following = [...new Set([...appData.user.forumProfile.following, ...allCharIds])];
-
+                if (!appData.version || parseFloat(appData.version) < 24.0) {
+                    // This block is for migrating data from older versions
+                    if (!appData.forum) appData.forum = JSON.parse(JSON.stringify(defaultAppData.forum));
+                    if (!appData.notifications) appData.notifications = [];
+                    if (!appData.user.forumProfile) appData.user.forumProfile = JSON.parse(JSON.stringify(defaultAppData.user.forumProfile));
+                    if (!Array.isArray(appData.user.forumProfile.following)) appData.user.forumProfile.following = [];
+                    if (!appData.settings.beautify.appIcons.forum) appData.settings.beautify.appIcons.forum = defaultAppData.settings.beautify.appIcons.forum;
+                    if (!appData.settings.beautify.batteryIcon) appData.settings.beautify.batteryIcon = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.batteryIcon));
+                    if (!appData.settings.beautify.lockScreen) appData.settings.beautify.lockScreen = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.lockScreen));
+                    if (!appData.settings.beautify.homeScreenFontColor) appData.settings.beautify.homeScreenFontColor = defaultAppData.settings.beautify.homeScreenFontColor;
+                    if (!appData.settings.beautify.globalFontColor) appData.settings.beautify.globalFontColor = defaultAppData.settings.beautify.globalFontColor;
+                    if (!appData.settings.beautify.appIcons) appData.settings.beautify.appIcons = JSON.parse(JSON.stringify(defaultAppData.settings.beautify.appIcons));
+                    if (!appData.settings.beautify.homeScreenWallpaper) appData.settings.beautify.homeScreenWallpaper = defaultAppData.settings.beautify.homeScreenWallpaper;
+                    if (appData.settings.beautify.appIconSize === undefined) appData.settings.beautify.appIconSize = defaultAppData.settings.beautify.appIconSize;
+                    if (appData.settings.beautify.appIconGap === undefined) appData.settings.beautify.appIconGap = defaultAppData.settings.beautify.appIconGap;
+                    if (appData.settings.beautify.appIconRadius === undefined) appData.settings.beautify.appIconRadius = defaultAppData.settings.beautify.appIconRadius;
+                    if (appData.settings.dnd === undefined) appData.settings.dnd = false;
+                    if (!appData.user.bankCards) appData.user.bankCards = [];
+                    if (!appData.settings.beautify.globalThemeArchives) appData.settings.beautify.globalThemeArchives = [{}, {}, {}, {}, {}];
+                    if (appData.settings.beautify.activeGlobalThemeSlot === undefined) appData.settings.beautify.activeGlobalThemeSlot = -1;
+                    if (!appData.user.nickname) { appData.user.nickname = appData.user.name || ' '; delete appData.user.name; }
+                    if (appData.user.persona) delete appData.user.persona;
+                    if (appData.user.address === undefined) appData.user.address = '';
+                    if (!appData.user.wallet?.currency) appData.user.wallet.currency = 'CNY';
+                    if (!appData.settings.charLanguage) appData.settings.charLanguage = 'zh-CN';
+                    if (!appData.settings.notifications) appData.settings.notifications = JSON.parse(JSON.stringify(defaultAppData.settings.notifications));
+                    if (!appData.user.personas) appData.user.personas = [];
+                    if (!appData.delivery) appData.delivery = JSON.parse(JSON.stringify(defaultAppData.delivery));
+                    if (!appData.settings.beautify.phoneFrame) appData.settings.beautify.phoneFrame = 'black';
+                    if (!appData.settings.beautify.avatarShape) appData.settings.beautify.avatarShape = 'rounded';
+                    if (appData.settings.beautify.voiceBubbleCss) delete appData.settings.beautify.voiceBubbleCss; // Deprecated
+                    if (!appData.settings.beautify.screenWidth) appData.settings.beautify.screenWidth = 380;
+                    if (!appData.settings.beautify.screenHeight) appData.settings.beautify.screenHeight = 820;
+                    if (!appData.worldbooks) appData.worldbooks = { presets: [], styles: [], library: [], forum: [] };
+                    if (appData.worldbooks.forum === undefined || typeof appData.worldbooks.forum === 'string') appData.worldbooks.forum = [];
+                    if (!appData.longTermMemory) appData.longTermMemory = {};
+                    if (!appData.settings.api.repetition_penalty) appData.settings.api.repetition_penalty = 0.69;
+                    if (!appData.settings.api.presets) appData.settings.api.presets = [];
+                    if (!appData.music.playerImage) appData.music.playerImage = defaultAppData.music.playerImage;
+                    if (!appData.music.playerBackground) appData.music.playerBackground = defaultAppData.music.playerBackground;
+                    if (!appData.settings.beautify.redPacketBubbleCss) appData.settings.beautify.redPacketBubbleCss = '';
+                    if (!appData.settings.beautify.transferBubbleCss) appData.settings.beautify.transferBubbleCss = '';
+                    if (appData.settings.displayMode === undefined) appData.settings.displayMode = 'default';
+                    
+                    appData.contacts.forEach(c => {
+                        if (c.isPinned === undefined) c.isPinned = false;
+                        if (c.isStarred === undefined) c.isStarred = false;
+                        if (c.lastMomentPostTime === undefined) c.lastMomentPostTime = 0;
+                        if (c.boundPersonaId === undefined) c.boundPersonaId = null;
+                        if (c.isCouple === undefined) c.isCouple = false;
+                        if (!c.pokeSettings) c.pokeSettings = { userToChar: { action: '拍了拍', suffix: '' }, charToUser: { action: '拍了拍', suffix: '' } };
+                        if (c.forumFollowers === undefined) c.forumFollowers = Math.floor(Math.random() * 10000);
+                        if (c.forumFollowing === undefined) c.forumFollowing = Math.floor(Math.random() * 500);
+                        if (c.chatSettings === undefined) c.chatSettings = { background: '', userAvatar: '', charAvatar: '' };
+                        if (!c.wallet) c.wallet = { balance: Math.floor(Math.random() * 500000) };
+                    });
+                    
+                    const allCharIds = appData.contacts.map(c => c.id);
+                    appData.user.forumProfile.following = [...new Set([...(appData.user.forumProfile.following || []), ...allCharIds])];
+                    appData.version = '24.0';
+                    await saveData(); // Save migrated data
+                }
 
             } catch (error) {
                 console.error("Failed to load data, using defaults.", error);
@@ -1009,7 +1022,7 @@
                 return;
             }
 
-            if (pageId !== 'lock-screen-page' && pageId !== 'password-entry-page' && appData.settings.beautify.lockScreen.enabled && (pageHistory[pageHistory.length - 1] === 'home-screen-page' || pageHistory.length === 0)) {
+            if (pageId !== 'lock-screen-page' && pageId !== 'password-entry-page' && appData.settings.beautify.lockScreen.enabled && (pageHistory[pageHistory.length - 1] === 'home-screen-page' || pageHistory.length === 0 || pageHistory[pageHistory.length - 1] === 'lock-screen-page')) {
                 pageHistory = ['lock-screen-page'];
                 showPage('lock-screen-page', renderLockScreenPage);
                 return;
@@ -1285,6 +1298,9 @@
                     <div class="list-item" onclick="showPage('beautify-page', renderBeautifyPage)">
                         <div class="details"><span class="name">美化功能</span></div><i class="fas fa-chevron-right chevron"></i>
                     </div>
+                    <div class="list-item" onclick="showPage('display-settings-page', renderDisplaySettingsPage)">
+                        <div class="details"><span class="name">显示功能</span></div><i class="fas fa-chevron-right chevron"></i>
+                    </div>
                     <div class="list-item" onclick="showPage('notification-settings-page', renderNotificationSettingsPage)">
                         <div class="details"><span class="name">聊天提示音</span></div><i class="fas fa-chevron-right chevron"></i>
                     </div>
@@ -1336,6 +1352,33 @@
                 saveData();
                 updateSystemUI();
             };
+        }
+
+        function renderDisplaySettingsPage(container) {
+            container.innerHTML = `
+                <div class="wechat-header">
+                    <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i><span>设置</span></div>
+                    <span class="header-title">显示功能</span>
+                </div>
+                <div class="content-area">
+                    <div class="list-divider"></div>
+                    <div class="list-item" onclick="setDisplayMode('default')">
+                        <div class="details"><span class="name">保留边框</span></div>
+                        ${appData.settings.displayMode === 'default' ? '<i class="fas fa-check" style="color: var(--wechat-green);"></i>' : ''}
+                    </div>
+                    <div class="list-item" onclick="setDisplayMode('fullscreen')">
+                        <div class="details"><span class="name">去除边框进入全屏</span></div>
+                        ${appData.settings.displayMode === 'fullscreen' ? '<i class="fas fa-check" style="color: var(--wechat-green);"></i>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function setDisplayMode(mode) {
+            appData.settings.displayMode = mode;
+            saveData();
+            applyBeautifySettings();
+            renderDisplaySettingsPage(document.getElementById('display-settings-page'));
         }
 
         function renderWorldbookAppPage(container) {
@@ -2266,40 +2309,27 @@
         function showWorldbookEditor(type) {
             const typeMap = { presets: '预设', styles: '文风', library: '世界书库', forum: '论坛世界书' };
             const isForumWb = type === 'forum';
-            const items = isForumWb ? null : appData.worldbooks[type];
-            const modalId = 'worldbook-editor-modal';
-            let content;
-
-            if (isForumWb) {
-                content = `
-                    <div class="modal-content" style="width: 95%; max-width: 400px;">
-                        <div class="modal-title">${typeMap[type]}</div>
-                        <div class="form-group">
-                            <label>内容 (无字数上限)</label>
-                            <textarea id="wb-edit-content" class="modal-input" style="height: 40vh;">${appData.worldbooks.forum || ''}</textarea>
-                        </div>
-                        <div class="modal-actions">
-                            <button class="modal-btn" onclick="closeModal('${modalId}')">取消</button>
-                            <button class="modal-btn primary" onclick="saveWorldbookItem('${type}')">保存</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                content = `
-                    <div class="modal-content" style="width: 95%; max-width: 400px;">
-                        <div class="modal-title">${typeMap[type]} <i class="fas fa-plus-circle" style="cursor:pointer; color: var(--wechat-green);" onclick="editWorldbookItem('${type}')"></i></div>
-                        <div class="list-view" style="max-height: 60vh; overflow-y: auto; background: transparent;">
-                            ${items.map(item => `
-                                <div class="list-item" onclick="editWorldbookItem('${type}', ${item.id})">
-                                    <div class="details"><span class="name">${item.name}</span></div>
-                                    <i class="fas fa-trash-alt" style="color: var(--wechat-red);" onclick="deleteWorldbookItem(event, '${type}', ${item.id})"></i>
-                                </div>
-                            `).join('') || `<p style="text-align:center; padding: 20px;">暂无内容</p>`}
-                        </div>
-                        <button class="modal-btn" onclick="closeModal('${modalId}')" style="margin-top: 15px;">关闭</button>
-                    </div>
-                `;
+            // Ensure forum worldbook is treated as an array for multiple entries
+            if (isForumWb && !Array.isArray(appData.worldbooks.forum)) {
+                appData.worldbooks.forum = appData.worldbooks.forum ? [{ id: Date.now(), name: '默认论坛设定', content: appData.worldbooks.forum }] : [];
             }
+            const items = appData.worldbooks[type];
+            const modalId = 'worldbook-editor-modal';
+            
+            const content = `
+                <div class="modal-content" style="width: 95%; max-width: 400px;">
+                    <div class="modal-title">${typeMap[type]} <i class="fas fa-plus-circle" style="cursor:pointer; color: var(--wechat-green);" onclick="editWorldbookItem('${type}')"></i></div>
+                    <div class="list-view" style="max-height: 60vh; overflow-y: auto; background: transparent;">
+                        ${items.map(item => `
+                            <div class="list-item" onclick="editWorldbookItem('${type}', ${item.id})">
+                                <div class="details"><span class="name">${item.name}</span></div>
+                                <i class="fas fa-trash-alt" style="color: var(--wechat-red);" onclick="deleteWorldbookItem(event, '${type}', ${item.id})"></i>
+                            </div>
+                        `).join('') || `<p style="text-align:center; padding: 20px;">暂无内容</p>`}
+                    </div>
+                    <button class="modal-btn" onclick="closeModal('${modalId}')" style="margin-top: 15px;">关闭</button>
+                </div>
+            `;
             showModal(modalId, content);
         }
 
@@ -2307,7 +2337,7 @@
             const isNew = id === null;
             const item = isNew ? { id: Date.now(), name: '', content: '' } : appData.worldbooks[type].find(i => i.id === id);
             if (!item) return;
-            const typeMap = { presets: '预设', styles: '文风', library: '世界书' };
+            const typeMap = { presets: '预设', styles: '文风', library: '世界书', forum: '论坛设定' };
             const title = (isNew ? '新建' : '编辑') + typeMap[type];
             const modalId = 'worldbook-item-editor';
             const content = `
@@ -2331,16 +2361,10 @@
         }
 
         function saveWorldbookItem(type, id, isNew) {
-            if (type === 'forum') {
-                appData.worldbooks.forum = document.getElementById('wb-edit-content').value;
-                saveData(true);
-                closeModal('worldbook-editor-modal');
-                return;
-            }
-
             const name = document.getElementById('wb-edit-name').value;
             const content = document.getElementById('wb-edit-content').value;
             if (!name) { showToast('名称不能为空', 'error'); return; }
+            
             if (isNew) {
                 appData.worldbooks[type].push({ id: Date.now(), name, content });
             } else {
@@ -3315,6 +3339,7 @@
                 const replies = await getAiReply(chat.id, source);
                 setTypingIndicator(chatId, false, null, source);
                 for (const reply of replies) {
+                    await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000)); // Simulate typing delay
                     await processAndSendAiReply(reply, chat.id, 'individual', chat.id, source);
                 }
             } else if (chatType === 'group' && shouldReply) {
@@ -3324,6 +3349,7 @@
                         const replies = await getAiReply(member.id, source, null, chat.id);
                         setTypingIndicator(chatId, false, null, source);
                         for (const reply of replies) {
+                            await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000)); // Simulate typing delay
                             await processAndSendAiReply(reply, chat.id, 'group', member.id, source);
                         }
                     }
@@ -3490,10 +3516,8 @@ ${worldbookPreset}
 1. 时间感知：实时读取并响应2025年12月3日和16:10，在对话中自然体现时间流动（如"傍晚的夕阳透过窗"、"凌晨三点的困意"）
 2. 交互渲染：
    - 转账/红包必须用CSS组件呈现，示例：
-<div class="transfer-bubble">
-  <div class="amount">¥10000</div>
-  <div class="remark">周末聚餐费</div>
-</div>
+   [transfer: amount=100, remark=给你的零花钱]
+   [redPacket: amount=88, remark=恭喜发财]
 3. 语言净化：彻底摒弃油腻感、霸总腔、八股文，禁用"投石子/小兽/像是在陈述事实"等表述，追求自然鲜活的口语化表达
 
 二、双模式切换机制
@@ -3501,15 +3525,11 @@ ${worldbookPreset}
    - 单次生成5-10条对话气泡（紧急情况可扩展至25条）
    - 每条内容独立包裹在气泡容器内，体现日常互动节奏
    - 示例结构：
-<div class="bubble-left">[吐槽向对话]</div>
-<div class="bubble-right">[用户可能的回应]</div>
+   第一句回复
+   第二句回复
 2. 线下剧情模式：
    - 生成2000-8000字连续叙事（严格遵循"世界书"APP设定的文风库）
    - 深度绑定当前剧情线，禁止突兀跳转
-   - 文风示例匹配：
-<div class="novel-mode" data-style="轻小说">
-  [基于已有人物关系的剧情推进]
-</div>
 
 三、轻小说式表达框架
 1. 视角管理：默认采用第二人称视角，强化主角内心吐槽与场景反应
@@ -3551,7 +3571,7 @@ ${worldbookPreset}
 
 【红包/转账核心原则】
 1. 用户友好性：生成的消息应简洁明了，易于用户理解和操作。使用清晰的状态标识（如“已发送”“已收款”“已领取”“已退回”）来指示交易状态。
-2. CSS样式一致性：确保生成的红包和转账消息使用与现有CSS样式一致的样式。使用"<div class="transfer-bubble">"和"<div class="redpacket-bubble">"来包裹消息内容，确保视觉效果的一致性。
+2. CSS样式一致性：确保生成的红包和转账消息使用与现有CSS样式一致的样式。使用"[transfer: amount=xxx, remark=xxx]"和"[redPacket: amount=xxx, remark=xxx]"来触发系统生成气泡。
 3. 状态管理：确保每个红包或转账请求都有明确的状态，避免混淆。状态更新应实时反映在聊天记录中，确保用户能够及时了解最新的交易状态。
 4. 安全性：在处理转账和红包时，确保金额和备注的准确性，避免错误的财务操作。确保只有合法的交易请求被处理，防止潜在的安全风险。
 
@@ -3781,6 +3801,14 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
             if (batterySettings.displayMode === 'none') {
                 root.style.setProperty('--battery-percent-display-outside', 'none');
                 root.style.setProperty('--battery-percent-display-inside', 'none');
+            }
+
+            // Display Mode Settings
+            const phoneContainer = document.getElementById('phone-body');
+            if (appData.settings.displayMode === 'fullscreen') {
+                phoneContainer.classList.add('fullscreen');
+            } else {
+                phoneContainer.classList.remove('fullscreen');
             }
         }
 
@@ -6392,6 +6420,8 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
             // Home Screen
             const homeScreenTime = document.getElementById('home-screen-time');
             if (homeScreenTime) homeScreenTime.textContent = timeString;
+            const homeScreenDate = document.getElementById('home-screen-date');
+            if (homeScreenDate) homeScreenDate.textContent = dateString;
 
             // Network & Battery
             const networkEl = document.getElementById('status-bar-network');
@@ -6575,7 +6605,7 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
         }
 
         function renderLockScreenSettingsPage(container) {
-            const lockSettings = appData.settings.beautify.lockScreen;
+            const lockSettings =appData.settings.beautify.lockScreen;
             container.innerHTML = `
                 <div class="wechat-header">
                     <div class="header-left header-back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i><span>设置</span></div>
@@ -6833,7 +6863,7 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
             container.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
 
             try {
-                const forumWb = appData.worldbooks.forum || '';
+                const forumWb = (appData.worldbooks.forum || []).map(item => item.content).join('\n\n');
                 const prompt = `你是一个论坛内容生成器。请根据以下世界书设定，生成10条风格各异的论坛帖子。
                 世界书：${forumWb}
                 
@@ -6842,7 +6872,7 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
                 论坛刷新动态的核心任务是模拟真实用户在社区里的信息流更新，既要让内容鲜活、有“活人感”，又要保留细节观察与潜台词的空间，避免油腻、霸总腔、八股文。它像是一台带着镜头的记录仪，把社区里的细碎情绪与互动，按时间和情境自然铺陈出来。
 
                 二、时间与情境感知
-                - 实时时间锚定：必须读取2025年12月3日与16:20，并在动态标题、首句或细节中自然体现，例如“上午十点的咖啡香还没散尽，楼主已经发了新帖”、“深夜两点半的刷新，第一条动态带着没睡醒的迷糊”。
+                - 实时时间锚定：必须读取当前现实时间，并在动态标题、首句或细节中自然体现，例如“上午十点的咖啡香还没散尽，楼主已经发了新帖”、“深夜两点半的刷新，第一条动态带着没睡醒的迷糊”。
                 - 情境嵌入：动态内容要结合当下可能的场景（工作日午休、周末逛展、假期旅行），让刷新出来的帖子像是从真实生活里截取的片段，而不是凭空生成的抽象话题。
 
                 三、动态生成双模式逻辑
@@ -6889,14 +6919,26 @@ ${isOfflineMode ? '当前为线下剧情模式，请生成一段2000-8000字的�
                 
                 const allPossibleAuthors = [...appData.contacts, appData.user];
                 const reply = (await getAiReply(appData.user.id, 'wechat', prompt))[0]; // Use a generic context for this
-                const newPostsData = JSON.parse(reply);
+                
+                let newPostsData;
+                try {
+                    newPostsData = JSON.parse(reply);
+                    if (!Array.isArray(newPostsData)) throw new Error("API did not return an array.");
+                } catch (e) {
+                    console.error("Failed to parse forum posts JSON:", e, "Raw reply:", reply);
+                    container.innerHTML = `<p style="color: red; padding: 20px;">刷新帖子失败: API返回格式错误。</p>`;
+                    return;
+                }
 
                 const newPosts = newPostsData.map(postData => {
                     let author;
-                    if (postData.authorId === 'user' || !appData.contacts.find(c => c.id == postData.authorId)) {
+                    const authorId = postData.authorId;
+                    const foundContact = appData.contacts.find(c => c.id == authorId);
+
+                    if (authorId === 'user' || !foundContact) {
                         author = allPossibleAuthors[Math.floor(Math.random() * allPossibleAuthors.length)];
                     } else {
-                        author = appData.contacts.find(c => c.id == postData.authorId);
+                        author = foundContact;
                     }
                     
                     const newPost = {
